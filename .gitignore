@@ -1,0 +1,8 @@
+.idea
+build/
+
+frontend/.dart_tool
+frontend/android
+frontend/ios
+frontend/test
+frontend/.metadata
