@@ -10,7 +10,7 @@ const authMiddleware = (req, res, next) => {
 
     try {
         // Verifica il token e decodifica l'ID dell'utente
-        const decoded = jwt.verify(token, 'your_jwt_secret');
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
         req.user = decoded; // Salva il payload del token nella richiesta
         next(); // Passa al prossimo middleware o controller
     } catch (error) {
