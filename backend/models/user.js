@@ -4,15 +4,11 @@ const sequelize = require('../config/db');
 const User = sequelize.define('User', {
     nome: {
         type: DataTypes.STRING,
-        allowNull: false
+        allowNull: true
     },
     cognome: {
         type: DataTypes.STRING,
-        allowNull: false
-    },
-    data_nascita: {
-        type: DataTypes.DATE,
-        allowNull: false
+        allowNull: true
     },
     email: {
         type: DataTypes.STRING,
@@ -21,9 +17,17 @@ const User = sequelize.define('User', {
     },
     password: {
         type: DataTypes.STRING,
-        allowNull: false
+        allowNull: true
+    },
+    data_nascita: {
+        type: DataTypes.DATE,
+        allowNull: true
     },
     short_bio: {
+        type: DataTypes.TEXT,
+        allowNull: true
+    },
+    indirizzo: {
         type: DataTypes.TEXT,
         allowNull: true
     },
@@ -35,12 +39,20 @@ const User = sequelize.define('User', {
         type: DataTypes.JSONB,
         allowNull: true
     },
-    avatar: {
+    posizione_geografica: {
+        type: DataTypes.TEXT,
+        allowNull: true
+    },
+    social_id: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    social_provider: {
         type: DataTypes.STRING,
         allowNull: true
     }
 }, {
-    timestamps: false,
+    timestamps: true,
     createdAt: 'created_at',
     updatedAt: 'updated_at',
     tableName: 'users'
