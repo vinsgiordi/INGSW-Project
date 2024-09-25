@@ -1,5 +1,7 @@
 const { StatusCodes } = require('http-status-codes');
 const Payment = require('../models/payment');
+const Order = require('../models/order');
+const { client } = require('../config/paypalConfig'); // Importiamo la configurazione PayPal
 
 // Crea un nuovo metodo di pagamento
 const createPayment = async (req, res) => {
@@ -47,8 +49,43 @@ const deletePayment = async (req, res) => {
     }
 };
 
+// Funzione per creare un ordine PayPal e salvarlo nel DB
+const createPayPalOrder = async (req, res) => {
+    const { importo_totale, id_ordine_db } = req.body;
+    try {
+      const order = await client.post('/v2/checkout/orders', {
+        intent: 'CAPTURE',
+        purchase_units: [{ amount: { currency_code: 'USD', value: importo_totale } }]
+      });
+      const orderID = order.data.id; // Ottieni l'ID dell'ordine PayPal
+      // Aggiorna l'ordine nel DB con l'orderID di PayPal
+      await Order.update({ orderID }, { where: { id: id_ordine_db } });
+      res.status(200).json({ orderID });
+    } catch (error) {
+      res.status(500).json({ error: 'Errore nella creazione dell\'ordine PayPal' });
+    }
+  };
+
+  // Funzione per catturare il pagamento PayPal
+  const capturePayPalOrder = async (req, res) => {
+    const { orderID, id_ordine_db } = req.body;
+    try {
+      const capture = await client.post(`/v2/checkout/orders/${orderID}/capture`);
+      // Aggiorna lo stato dell'ordine a "completato" nel DB
+      await Order.update({ stato: 'completato' }, { where: { id: id_ordine_db } });
+      res.status(200).json({ success: true, capture: capture.data });
+    } catch (error) {
+      // Aggiorna lo stato dell'ordine a "fallito" nel DB
+      await Order.update({ stato: 'fallito' }, { where: { id: id_ordine_db } });
+      res.status(500).json({ error: 'Errore nella cattura del pagamento PayPal' });
+    }
+  };
+
+
 module.exports = {
     createPayment,
     getPaymentsByUser,
-    deletePayment
+    deletePayment,
+    createPayPalOrder,
+    capturePayPalOrder
 };
