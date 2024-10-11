@@ -1,16 +1,17 @@
 const { StatusCodes } = require('http-status-codes');
 const Notification = require('../models/notification');
+const User = require('../models/user');
 
 // Crea una nuova notifica
 const createNotification = async (req, res) => {
-    const { messaggio } = req.body;
+    const { messaggio, utente_id } = req.body; // Aggiungi l'opzione di inviare notifiche a utenti specifici
 
     try {
-
-        const utente_id = req.user.id;
+        // Se non è specificato un utente, utilizza l'ID dell'utente autenticato
+        const userId = utente_id || req.user.id;
 
         const notification = await Notification.create({
-            utente_id,
+            utente_id: userId,
             messaggio
         });
         res.status(StatusCodes.CREATED).json(notification);
@@ -24,7 +25,11 @@ const getNotificationsByUser = async (req, res) => {
     try {
         const notifications = await Notification.findAll({
             where: { utente_id: req.user.id },
-            order: [['created_at', 'DESC']]
+            order: [['created_at', 'DESC']],
+            include: {
+                model: User, // Includi informazioni sull'utente
+                attributes: ['id', 'nome', 'email'] // Solo i campi necessari
+            }
         });
         res.status(StatusCodes.OK).json(notifications);
     } catch (error) {
@@ -37,7 +42,7 @@ const markAsRead = async (req, res) => {
     try {
         const notification = await Notification.findByPk(req.params.id);
         if (!notification || notification.utente_id !== req.user.id) {
-            return res.status(StatusCodes.NOT_FOUND).json({ error: 'Notifica non trovata' });
+            return res.status(StatusCodes.NOT_FOUND).json({ error: 'Notifica non trovata o non autorizzato' });
         }
 
         notification.letto = true;
@@ -53,7 +58,7 @@ const deleteNotification = async (req, res) => {
     try {
         const notification = await Notification.findByPk(req.params.id);
         if (!notification || notification.utente_id !== req.user.id) {
-            return res.status(StatusCodes.NOT_FOUND).json({ error: 'Notifica non trovata' });
+            return res.status(StatusCodes.NOT_FOUND).json({ error: 'Notifica non trovata o non autorizzato' });
         }
 
         await notification.destroy();

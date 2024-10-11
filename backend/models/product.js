@@ -29,7 +29,7 @@ const Product = sequelize.define('Product', {
     venditore_id: {
         type: DataTypes.INTEGER,
         references: {
-            model: 'Users',
+            model: 'Users', // Assicurati che sia il nome del modello corretto
             key: 'id'
         },
         allowNull: false
@@ -40,5 +40,10 @@ const Product = sequelize.define('Product', {
     updatedAt: 'updated_at',
     tableName: 'products'
 });
+
+// Associazione con il venditore
+Product.associate = (models) => {
+    Product.belongsTo(models.User, { foreignKey: 'venditore_id', as: 'venditore' });
+};
 
 module.exports = Product;

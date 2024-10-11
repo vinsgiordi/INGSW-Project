@@ -1,17 +1,18 @@
 const { StatusCodes } = require('http-status-codes');
 const Order = require('../models/order');
 const Product = require('../models/product');
+const User = require('../models/user');
 
 // Crea un nuovo ordine
 const createOrder = async (req, res) => {
     const { prodotto_id, indirizzo_spedizione, metodo_pagamento, importo_totale } = req.body;
 
     try {
-        // Qui useremo l'id dell'acquirente dal token JWT e lo assoceremo all'ordine
+        // Otteniamo l'ID dell'acquirente dal token JWT
         const acquirente_id = req.user.id;
 
-        // Supponiamo che il venditore sia collegato al prodotto (aggiungi la logica necessaria se non esiste già)
-        const venditore_id = await getVenditoreId(prodotto_id); // Funzione ipotetica che ottiene il venditore del prodotto
+        // Funzione per ottenere il venditore associato al prodotto
+        const venditore_id = await getVenditoreId(prodotto_id);
 
         const order = await Order.create({
             prodotto_id,
@@ -22,6 +23,7 @@ const createOrder = async (req, res) => {
             importo_totale,
             stato: 'in elaborazione' // Stato iniziale dell'ordine
         });
+
         res.status(StatusCodes.CREATED).json(order);
     } catch (error) {
         res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: error.message });
@@ -34,7 +36,18 @@ const getOrdersByUser = async (req, res) => {
         const orders = await Order.findAll({
             where: {
                 acquirente_id: req.user.id
-            }
+            },
+            include: [
+                {
+                    model: Product, // Include il prodotto associato
+                    attributes: ['id', 'nome', 'descrizione', 'immagine_principale']
+                },
+                {
+                    model: User, // Include il venditore
+                    as: 'venditore',
+                    attributes: ['id', 'nome', 'email']
+                }
+            ]
         });
         res.status(StatusCodes.OK).json(orders);
     } catch (error) {
@@ -45,7 +58,19 @@ const getOrdersByUser = async (req, res) => {
 // Recupera un ordine specifico per ID
 const getOrderById = async (req, res) => {
     try {
-        const order = await Order.findByPk(req.params.id);
+        const order = await Order.findByPk(req.params.id, {
+            include: [
+                {
+                    model: Product, // Include il prodotto associato
+                    attributes: ['id', 'nome', 'descrizione', 'immagine_principale']
+                },
+                {
+                    model: User, // Include il venditore
+                    as: 'venditore',
+                    attributes: ['id', 'nome', 'email']
+                }
+            ]
+        });
 
         // Controlla se l'ordine esiste e se l'utente autenticato è l'acquirente o il venditore
         if (!order || (order.acquirente_id !== req.user.id && order.venditore_id !== req.user.id)) {
