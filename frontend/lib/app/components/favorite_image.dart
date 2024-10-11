@@ -40,17 +40,6 @@ class _FavoriteImageState extends State<FavoriteImage> {
               fit: BoxFit.cover,
             ),
           ),
-          Positioned(
-            top: 0.0,
-            left: 0.0,
-            child: IconButton(
-              icon: Icon(
-                _isFavorite ? Icons.favorite : Icons.favorite_border,
-                color: _isFavorite ? Colors.red : Colors.white,
-              ),
-              onPressed: _toggleFavorite,
-            ),
-          ),
         ],
       ),
     );

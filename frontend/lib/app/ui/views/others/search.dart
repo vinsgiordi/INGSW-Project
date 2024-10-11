@@ -1,79 +1,98 @@
 import 'package:flutter/material.dart';
-import '../../components/bottom_navbar.dart';
-import 'category/categories.dart';
+import 'package:provider/provider.dart';
+import '../../../components/bottom_navbar.dart';
+import '../../../components/product_detail.dart';
+import '../../../data/provider/search_provider.dart'; // Usa il SearchProvider per la ricerca
+import '../../../data/provider/category_provider.dart'; // Importiamo il CategoryProvider
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SearchPage extends StatefulWidget {
+  const SearchPage({super.key});
+
   @override
   _SearchPageState createState() => _SearchPageState();
 }
 
 class _SearchPageState extends State<SearchPage> {
-  TextEditingController _searchController = TextEditingController();
-  FocusNode _focusNode = FocusNode();
+  final TextEditingController _searchController = TextEditingController();
+  final FocusNode _focusNode = FocusNode();
   bool _isSearching = false;
-  String _selectedCategory = 'Tutte le categorie';
-
-  void _performSearch(String query) {
-    setState(() {
-      _isSearching = query.isNotEmpty;
-    });
-
-    // Placeholder for backend search
-    // Future: Send query and selected category to the backend
-  }
-
-  void _clearSearch() {
-    _searchController.clear();
-    setState(() {
-      _isSearching = false;
-    });
-  }
-
-  void _cancelSearch() {
-    _searchController.clear();
-    _focusNode.unfocus(); // Nasconde la tastiera
-    setState(() {
-      _isSearching = false;
-    });
-  }
-
-  void _selectCategory(String category) {
-    setState(() {
-      _selectedCategory = category;
-    });
-  }
-
-  void _clearCategoryFilter() {
-    setState(() {
-      _selectedCategory = 'Tutte le categorie';
-    });
-  }
+  String _selectedCategory = ''; // Categoria ID selezionata
+  String _selectedCategoryId = ''; // Categoria ID selezionata
+  String _token = '';
 
   @override
   void initState() {
     super.initState();
-    _focusNode.addListener(() {
-      setState(() {
-        // Aggiorna lo stato quando il focus cambia
-      });
+    _loadToken();
+
+    // Utilizza addPostFrameCallback per eseguire operazioni dopo il primo build completo
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _fetchCategories(); // Recuperiamo le categorie
     });
   }
 
-  @override
-  void dispose() {
-    _searchController.dispose();
-    _focusNode.dispose();
-    super.dispose();
+  // Funzione per caricare il token salvato nelle SharedPreferences
+  Future<void> _loadToken() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString('accessToken');
+    setState(() {
+      _token = token ?? '';
+    });
+  }
+
+  // Funzione per recuperare le categorie utilizzando il provider
+  Future<void> _fetchCategories() async {
+    final categoryProvider = Provider.of<CategoryProvider>(context, listen: false);
+    await categoryProvider.fetchRecommendedCategories(); // Recupera le categorie
+  }
+
+  // Funzione per eseguire la ricerca basata su query e categoria
+  Future<void> _performSearch(String query) async {
+    setState(() {
+      _isSearching = query.isNotEmpty;
+    });
+
+    await Provider.of<SearchProvider>(context, listen: false).performSearch(
+      _token,
+      query: query,
+      categoryId: _selectedCategoryId.isEmpty ? '' : _selectedCategoryId,
+    );
+  }
+
+  // Funzione per selezionare una categoria
+  void _selectCategory(String category, String categoryId) {
+    setState(() {
+      _selectedCategory = category;
+      _selectedCategoryId = categoryId; // Imposta l'ID della categoria selezionata
+      _searchController.clear(); // Pulire la barra di ricerca quando si seleziona una nuova categoria
+    });
+
+    // Esegui la ricerca per categoria selezionata
+    _performSearch('');
+  }
+
+  // Funzione per rimuovere il filtro di categoria
+  void _clearCategoryFilter() {
+    setState(() {
+      _selectedCategory = '';
+      _selectedCategoryId = ''; // Reset della categoria selezionata
+      _searchController.clear(); // Pulisci anche il campo di ricerca
+    });
+    _performSearch(''); // Ricerca senza filtro
   }
 
   @override
   Widget build(BuildContext context) {
+    final searchProvider = Provider.of<SearchProvider>(context); // Usa il SearchProvider per la ricerca
+    final categoryProvider = Provider.of<CategoryProvider>(context); // Accedi al CategoryProvider
+
     return Scaffold(
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           Padding(
-            padding: const EdgeInsets.all(35.0),
+            padding: const EdgeInsets.symmetric(horizontal: 15.0, vertical: 42.0), // Ridotto il padding per la barra di ricerca
             child: Row(
               children: [
                 Expanded(
@@ -84,92 +103,129 @@ class _SearchPageState extends State<SearchPage> {
                       _performSearch(value);
                     },
                     decoration: InputDecoration(
-                      hintText: 'Cerca per marchio, modello, artista...',
-                      prefixIcon: const Icon(Icons.search, color: Colors.blue),
+                      hintText: 'Cerca',
+                      prefixIcon: const Icon(Icons.search, color: Colors.black),
                       suffixIcon: _isSearching
                           ? IconButton(
-                        icon: const Icon(Icons.clear, color: Colors.blue),
-                        onPressed: _clearSearch,
+                        icon: const Icon(Icons.clear, color: Colors.black),
+                        onPressed: () {
+                          _searchController.clear();
+                          _performSearch(''); // Ricerca vuota per ripristinare i risultati
+                        },
                       )
                           : null,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8.0),
-                        borderSide: BorderSide.none,
+                        borderSide: const BorderSide(color: Colors.black), // Bordo nero
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8.0),
+                        borderSide: const BorderSide(color: Colors.black), // Bordo nero durante il focus
                       ),
                       filled: true,
                       fillColor: Colors.grey[200],
                     ),
-                    style: const TextStyle(color: Colors.blue),
+                    style: const TextStyle(color: Colors.black),
+                    cursorColor: Colors.black, // Colore nero per il cursore
                   ),
                 ),
-                if (_focusNode.hasFocus)
-                  TextButton(
-                    onPressed: _cancelSearch,
-                    child: const Text('Annulla', style: TextStyle(color: Colors.blue)),
-                  ),
                 PopupMenuButton<String>(
-                  icon: const Icon(Icons.filter_list, color: Colors.blue),
+                  icon: const Icon(Icons.filter_list, color: Colors.black),
                   onSelected: (String value) {
-                    _selectCategory(value);
+                    // Trova l'ID della categoria selezionata
+                    String categoryId = categoryProvider.categories
+                        .firstWhere((category) => category.nome == value)
+                        .id
+                        .toString();
+                    _selectCategory(value, categoryId); // Passa il nome e l'id della categoria
                   },
                   itemBuilder: (BuildContext context) {
-                    return [
-                      const PopupMenuItem<String>(
-                        value: 'Tutte le categorie',
-                        child: Text('Tutte le categorie'),
-                      ),
-                      ...CategoriesPage.categories.map<PopupMenuItem<String>>((Map<String, dynamic> category) {
-                        return PopupMenuItem<String>(
-                          value: category['name'],
-                          child: Text(category['name']),
-                        );
-                      }).toList(),
-                    ];
+                    return categoryProvider.categories.map<PopupMenuItem<String>>((category) {
+                      return PopupMenuItem<String>(
+                        value: category.nome,
+                        child: Text(category.nome),
+                      );
+                    }).toList();
                   },
                 ),
               ],
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 35.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Text(
-                    'Categoria selezionata: $_selectedCategory',
-                    style: const TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold),
+          if (_selectedCategory.isNotEmpty) // Mostra il messaggio solo se c'è una categoria selezionata
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 15.0, vertical: 0.0), // Ridotto il padding verticale
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Text(
+                      'Categoria selezionata: $_selectedCategory',
+                      style: const TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold),
+                    ),
                   ),
-                ),
-                if (_selectedCategory != 'Tutte le categorie')
                   TextButton(
                     onPressed: _clearCategoryFilter,
-                    child: const Text('Rimuovi filtro', style: TextStyle(color: Colors.red)),
+                    child: const Text(
+                      'Rimuovi filtro',
+                      style: TextStyle(color: Colors.red),
+                    ),
                   ),
-              ],
-            ),
-          ),
-          if (_isSearching)
-            const Center(
-              child: Padding(
-                padding: EdgeInsets.all(16.0),
-                child: Text(
-                  'Nessun risultato trovato.',
-                  style: TextStyle(fontSize: 18.0),
-                ),
+                ],
               ),
             ),
+          SizedBox(height: 5), // Margine ridotto tra le sezioni
+          Expanded(
+            child: Consumer<SearchProvider>(
+              builder: (context, searchProvider, child) {
+                if (searchProvider.isLoading) {
+                  return const Center(
+                    child: CircularProgressIndicator(),
+                  );
+                }
 
-          // Placeholder for displaying search results
-          const Expanded(
-            child: Center(
-              child: Text(
-                'Risultati della ricerca verranno visualizzati qui.',
-                style: TextStyle(fontSize: 16.0),
-              ),
+                if (!_isSearching && _selectedCategory.isEmpty) {
+                  return const Center(
+                    child: Text(
+                      'Seleziona una categoria o cerca un prodotto',
+                      style: TextStyle(fontSize: 18.0),
+                    ),
+                  );
+                }
+
+                if (searchProvider.searchResults.isEmpty) {
+                  return const Center(
+                    child: Padding(
+                      padding: EdgeInsets.all(16.0),
+                      child: Text(
+                        'Nessun risultato trovato.',
+                        style: TextStyle(fontSize: 18.0),
+                      ),
+                    ),
+                  );
+                }
+
+                return ListView.builder(
+                  itemCount: searchProvider.searchResults.length,
+                  itemBuilder: (context, index) {
+                    final auction = searchProvider.searchResults[index];
+                    return ListTile(
+                      title: Text(auction.productName ?? ''),
+                      subtitle: Text(auction.productDescription ?? ''),
+                      onTap: () {
+                        // Navigazione verso la pagina dei dettagli del prodotto
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => ProductDetailPage(auctionId: auction.id), // Passa l'id dell'asta
+                          ),
+                        );
+                      },
+                    );
+                  },
+                );
+              },
             ),
           ),
-
         ],
       ),
       bottomNavigationBar: const BottomNavBar(selectedIndex: 2),

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../../data/provider/user_provider.dart';
+import '../../../data/provider/user_provider.dart';
 
 class ForgotPasswordPage extends StatefulWidget {
   @override
