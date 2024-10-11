@@ -1,163 +1,211 @@
-import 'package:bid_hub/app/components/bottom_navbar.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../../../data/provider/user_provider.dart';
+import '../../../data/provider/notification_provider.dart';
 import '../../../routes/app_routes.dart';
+import '../../../components/bottom_navbar.dart';
 
 class AccountPage extends StatelessWidget {
-  final String userName; // Passa il nome dell'utente come parametro
-
-  AccountPage({required this.userName});
-
   @override
   Widget build(BuildContext context) {
+    final userProvider = Provider.of<UserProvider>(context);
+    final userName = userProvider.user?.nome ?? 'Utente';
+
     return Scaffold(
-      body: ListView(
-        children: <Widget>[
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Text(
-              'Ciao $userName',
-              style: const TextStyle(
-                fontSize: 24.0,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
+      body: FutureBuilder(
+        future: _checkToken(context),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError || snapshot.data == false) {
+            return const Center(child: Text('Errore nel caricamento. Effettua il login.'));
+          }
 
-          // SEZIONE ACQUIRENTE
-          const ListTile(
-            title: Text(
-              'ACQUISTA',
-              style: TextStyle(
-                fontSize: 16.0,
-                fontWeight: FontWeight.bold,
-                color: Colors.grey,
+          return ListView(
+            children: <Widget>[
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Text(
+                  'Ciao $userName',
+                  style: const TextStyle(
+                    fontSize: 24.0,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
-            ),
-          ),
-          ListTile(
-            leading: Icon(Icons.shopping_bag),
-            title: Text('Ordini'),
-            onTap: () {
-              Navigator.pushNamed(context, AppRoutes.orders); // Naviga alla pagina Ordini
-            },
-          ),
-          ListTile(
-            leading: Icon(Icons.gavel),
-            title: Text('Le mie offerte'),
-            onTap: () {
-              Navigator.pushNamed(context, AppRoutes.myBids); // Naviga alla pagina Le mie offerte
-            },
-          ),
+              // SEZIONE ACQUIRENTE
+              const ListTile(
+                title: Text(
+                  'ACQUISTA',
+                  style: TextStyle(
+                    fontSize: 16.0,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.grey,
+                  ),
+                ),
+              ),
+              ListTile(
+                leading: const Icon(Icons.shopping_bag),
+                title: const Text('Ordini'),
+                onTap: () {
+                  Navigator.pushNamed(context, AppRoutes.orders);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.gavel),
+                title: const Text('Le mie offerte'),
+                onTap: () {
+                  Navigator.pushNamed(context, AppRoutes.myBids);
+                },
+              ),
 
-          // SEZIONE VENDITORE
-          const ListTile(
-            title: Text(
-              'VENDI',
-              style: TextStyle(
-                fontSize: 16.0,
-                fontWeight: FontWeight.bold,
-                color: Colors.grey,
+              // SEZIONE VENDITORE
+              const ListTile(
+                title: Text(
+                  'VENDI',
+                  style: TextStyle(
+                    fontSize: 16.0,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.grey,
+                  ),
+                ),
               ),
-            ),
-          ),
-          ListTile(
-            leading: const Icon(Icons.shopping_bag),
-            title: const Text('All\'asta'),
-            onTap: () {
-              Navigator.pushNamed(context, AppRoutes.chooseAuctionType);
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.access_time),
-            title: const Text('In elaborazione'),
-            onTap: () {
-              Navigator.pushNamed(context, AppRoutes.inProgess);
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.shopping_cart),
-            title: const Text('Venduti'),
-            onTap: () {
-              Navigator.pushNamed(context, AppRoutes.sold);
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.close),
-            title: const Text('Non venduti'),
-            onTap: () {
-              Navigator.pushNamed(context, AppRoutes.unsold);
-            },
-          ),
+              ListTile(
+                leading: const Icon(Icons.shopping_bag),
+                title: const Text('All\'asta'),
+                onTap: () {
+                  Navigator.pushNamed(context, AppRoutes.chooseAuctionType);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.access_time),
+                title: const Text('In elaborazione'),
+                onTap: () {
+                  Navigator.pushNamed(context, AppRoutes.inProgess);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.shopping_cart),
+                title: const Text('Venduti'),
+                onTap: () {
+                  Navigator.pushNamed(context, AppRoutes.sold);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.close),
+                title: const Text('Non venduti'),
+                onTap: () {
+                  Navigator.pushNamed(context, AppRoutes.unsold);
+                },
+              ),
 
-          // MESSAGGISTICA
-          const ListTile(
-            title: Text(
-              'POSTA IN ARRIVO',
-              style: TextStyle(
-                fontSize: 16.0,
-                fontWeight: FontWeight.bold,
-                color: Colors.grey,
+              // MESSAGGISTICA
+              const ListTile(
+                title: Text(
+                  'POSTA IN ARRIVO',
+                  style: TextStyle(
+                    fontSize: 16.0,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.grey,
+                  ),
+                ),
               ),
-            ),
-          ),
-          ListTile(
-            leading: const Icon(Icons.message),
-            title: const Text('Messaggi'),
-            onTap: () {
-              // Naviga alla pagina Messaggi
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.notifications),
-            title: const Text('Notifiche'),
-            onTap: () {
-              // Naviga alla pagina Notifiche
-            },
-          ),
+              ListTile(
+                leading: const Icon(Icons.message),
+                title: const Text('Messaggi'),
+                onTap: () {
+                  // Naviga alla pagina Messaggi
+                },
+              ),
+              Consumer<NotificationProvider>(
+                builder: (context, notificationProvider, child) {
+                  final int unreadCount = notificationProvider.notifications
+                      .where((notification) => !notification.letto)
+                      .length;
 
-          // ACCOUNT
-          const ListTile(
-            title: Text(
-              'ACCOUNT',
-              style: TextStyle(
-                fontSize: 16.0,
-                fontWeight: FontWeight.bold,
-                color: Colors.grey,
+                  return ListTile(
+                    leading: const Icon(Icons.notifications),
+                    title: const Text('Notifiche'),
+                    trailing: unreadCount > 0
+                        ? CircleAvatar(
+                      radius: 10,
+                      backgroundColor: Colors.red,
+                      child: Text(
+                        '$unreadCount',
+                        style: const TextStyle(color: Colors.white, fontSize: 12),
+                      ),
+                    )
+                        : null,
+                    onTap: () {
+                      Navigator.pushNamed(context, AppRoutes.notifications);
+                    },
+                  );
+                },
               ),
-            ),
-          ),
-          ListTile(
-            leading: const Icon(Icons.settings),
-            title: const Text('Impostazioni dell\'account'),
-            onTap: () {
-              Navigator.pushNamed(context, AppRoutes.userProfile);
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.location_on),
-            title: const Text('Indirizzi'),
-            onTap: () {
-              Navigator.pushNamed(context, AppRoutes.addresses);
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.payment),
-            title: const Text('Pagamenti'),
-            onTap: () {
-              Navigator.pushNamed(context, AppRoutes.payments);
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.exit_to_app),
-            title: const Text('Chiudi sessione'),
-            onTap: () {
-              // Esegui il logout
-              Navigator.pushReplacementNamed(context, AppRoutes.login);
-            },
-          ),
-        ],
+
+              // ACCOUNT
+              const ListTile(
+                title: Text(
+                  'ACCOUNT',
+                  style: TextStyle(
+                    fontSize: 16.0,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.grey,
+                  ),
+                ),
+              ),
+              ListTile(
+                leading: const Icon(Icons.settings),
+                title: const Text('Impostazioni dell\'account'),
+                onTap: () async {
+                  SharedPreferences prefs = await SharedPreferences.getInstance();
+                  String? token = prefs.getString('accessToken');
+                  if (token != null) {
+                    Navigator.pushNamed(context, AppRoutes.userProfile);
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Token non disponibile, effettua il login.')),
+                    );
+                    Navigator.pushReplacementNamed(context, AppRoutes.login);
+                  }
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.location_on),
+                title: const Text('Indirizzi'),
+                onTap: () {
+                  Navigator.pushNamed(context, AppRoutes.addresses);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.payment),
+                title: const Text('Pagamenti'),
+                onTap: () {
+                  Navigator.pushNamed(context, AppRoutes.payments);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.exit_to_app),
+                title: const Text('Chiudi sessione'),
+                onTap: () {
+                  Navigator.pushReplacementNamed(context, AppRoutes.login);
+                },
+              ),
+            ],
+          );
+        },
       ),
-      bottomNavigationBar: const BottomNavBar(selectedIndex: 4), // Barra di navigazione
+      bottomNavigationBar: const BottomNavBar(selectedIndex: 4),
     );
+  }
+
+  Future<bool> _checkToken(BuildContext context) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString('accessToken');
+    if (token == null) {
+      return false;
+    }
+    return true;
   }
 }

@@ -25,10 +25,10 @@ class CategoriesPage extends StatelessWidget {
     {"name": "Auto e moto", "color": Colors.brown.shade200, "page": const CarsAndMotorcyclesPage()},
     {"name": "Carte collezionabili", "color": Colors.orange.shade200, "page": const CollectibleCardsPage()},
     {"name": "Giocattoli e modellini", "color": Colors.deepOrange.shade200, "page": const ToysAndModelsPage()},
-    {"name": "Archeologia e reperti", "color": Colors.brown.shade200, "page": const ArchaeologyPage()},
+    {"name": "Archeologia e reperti", "color": Colors.brown.shade200, "page": ArchaeologyPage()},
     {"name": "Sport", "color": Colors.yellow.shade200, "page": const SportsPage()},
     {"name": "Musica, film e fotocamere", "color": Colors.red.shade200, "page": const MusicFilmAndCamerasPage()},
-    {"name": "Libri e cimeli storici", "color": Colors.green.shade200, "page": const BooksAndHistoricalMemorabiliaPage()},
+    {"name": "Libri e cimeli storici", "color": Colors.green.shade200, "page":  const BooksAndHistoricalMemorabiliaPage()},
   ];
 
   @override

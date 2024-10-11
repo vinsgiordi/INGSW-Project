@@ -1,25 +1,21 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/db');
-const User = require('./user');
-const Product = require('./product');
 
 const Bid = sequelize.define('Bid', {
     prodotto_id: {
         type: DataTypes.INTEGER,
-        references: {
-            model: Product,
-            key: 'id'
-        }
+        allowNull: false
     },
     utente_id: {
         type: DataTypes.INTEGER,
-        references: {
-            model: User,
-            key: 'id'
-        }
+        allowNull: false
     },
     importo: {
         type: DataTypes.DECIMAL(10, 2),
+        allowNull: false
+    },
+    auction_id: {
+        type: DataTypes.INTEGER,
         allowNull: false
     }
 }, {
@@ -28,9 +24,5 @@ const Bid = sequelize.define('Bid', {
     updatedAt: 'updated_at',
     tableName: 'bids'
 });
-
-// Associazioni
-Bid.belongsTo(User, { foreignKey: 'utente_id' });
-Bid.belongsTo(Product, { foreignKey: 'prodotto_id' });
 
 module.exports = Bid;

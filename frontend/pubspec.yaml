@@ -32,9 +32,12 @@ dependencies:
     sdk: flutter
   flutter_svg: ^2.0.10+1
   provider: ^6.0.0
-  carousel_slider: ^4.2.1
+  carousel_slider: ^5.0.0
   image_picker: ^1.1.2
-
+  url_launcher: ^6.3.0
+  shared_preferences: ^2.3.2
+  http: ^1.2.2
+  intl: ^0.19.0
 
 
   # The following adds the Cupertino Icons font to your application.

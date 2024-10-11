@@ -1,4 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import '../../../../data/models/payment_model.dart';
+import '../../../../data/provider/payment_provider.dart';
 
 class PaymentsPage extends StatefulWidget {
   @override
@@ -6,6 +11,41 @@ class PaymentsPage extends StatefulWidget {
 }
 
 class _PaymentsPageState extends State<PaymentsPage> {
+  final TextEditingController _numeroCartaController = TextEditingController();
+  final TextEditingController _nomeIntestatarioController = TextEditingController();
+  final TextEditingController _dataScadenzaController = TextEditingController();
+  final TextEditingController _cvcController = TextEditingController();
+  String? _token;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadTokenAndFetchPayments();
+  }
+
+  // Recupera il token salvato in SharedPreferences e recupera i pagamenti
+  Future<void> _loadTokenAndFetchPayments() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    _token = prefs.getString('accessToken'); // Recupera il token dal login
+
+    if (_token != null) {
+      final paymentProvider = Provider.of<PaymentProvider>(context, listen: false);
+      await paymentProvider.fetchPayments(_token!);
+    } else {
+      // Se il token non è presente, potresti voler reindirizzare l'utente al login o mostrare un errore
+      print("Token non trovato");
+    }
+  }
+
+  // Metodo per svuotare i campi del form
+  void _clearFields() {
+    _numeroCartaController.clear();
+    _nomeIntestatarioController.clear();
+    _dataScadenzaController.clear();
+    _cvcController.clear();
+  }
+
+  // Metodo per mostrare il modale per aggiungere una carta
   void _showAddCardModal(BuildContext context) {
     showModalBottomSheet(
       context: context,
@@ -23,100 +63,45 @@ class _PaymentsPageState extends State<PaymentsPage> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       TextButton(
-                        onPressed: () => Navigator.pop(context),
+                        onPressed: () {
+                          Navigator.pop(context);
+                          _clearFields(); // Svuota i campi quando si chiude il modale
+                        },
                         child: const Text('Annulla', style: TextStyle(color: Colors.blue)),
                       ),
                       const Text('Aggiungi una carta', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                       TextButton(
-                        onPressed: () {},
+                        onPressed: () async {
+                          await _addPayment();
+                          Navigator.pop(context);
+                        },
                         child: const Text('Fine', style: TextStyle(color: Colors.blue)),
                       ),
                     ],
                   ),
                   const Divider(),
-                  const TextField(
-                    decoration: InputDecoration(
-                      labelText: 'Numero carta',
-                      prefixIcon: Icon(Icons.credit_card),
-                      focusedBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: Colors.black),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: Colors.black),
-                      ),
-                      labelStyle: TextStyle(color: Colors.black), // Colore del testo della label attiva
-                    ),
+                  const SizedBox(height: 16),
+                  _buildTextField(
+                    controller: _nomeIntestatarioController,
+                    label: 'Intestatario carta',
+                  ),
+                  const SizedBox(height: 16),
+                  _buildTextField(
+                    controller: _numeroCartaController,
+                    label: 'Numero carta',
+                    icon: Icons.credit_card,
+                  ),
+                  const SizedBox(height: 16),
+                  _buildTextField(
+                    controller: _dataScadenzaController,
+                    label: 'MM/AA',
+                    keyboardType: TextInputType.datetime,
+                  ),
+                  const SizedBox(height: 16),
+                  _buildTextField(
+                    controller: _cvcController,
+                    label: 'CVC',
                     keyboardType: TextInputType.number,
-                  ),
-                  const SizedBox(height: 16),
-                  const Row(
-                    children: [
-                      Expanded(
-                        child: TextField(
-                          decoration: InputDecoration(
-                            labelText: 'MM/AA',
-                            focusedBorder: OutlineInputBorder(
-                              borderSide: BorderSide(color: Colors.black),
-                            ),
-                            enabledBorder: OutlineInputBorder(
-                              borderSide: BorderSide(color: Colors.black),
-                            ),
-                            labelStyle: TextStyle(color: Colors.black), // Colore del testo della label attiva
-                          ),
-                          keyboardType: TextInputType.datetime,
-                        ),
-                      ),
-                      SizedBox(width: 16),
-                      Expanded(
-                        child: TextField(
-                          decoration: InputDecoration(
-                            labelText: 'CVC',
-                            focusedBorder: OutlineInputBorder(
-                              borderSide: BorderSide(color: Colors.black),
-                            ),
-                            enabledBorder: OutlineInputBorder(
-                              borderSide: BorderSide(color: Colors.black),
-                            ),
-                            labelStyle: TextStyle(color: Colors.black), // Colore del testo della label attiva
-                          ),
-                          keyboardType: TextInputType.number,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  const TextField(
-                    decoration: InputDecoration(
-                      labelText: 'Nome',
-                      focusedBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: Colors.black),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: Colors.black),
-                      ),
-                      labelStyle: TextStyle(color: Colors.black), // Colore del testo della label attiva
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  const TextField(
-                    decoration: InputDecoration(
-                      labelText: 'Indirizzo di fatturazione',
-                      focusedBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: Colors.black),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: Colors.black),
-                      ),
-                      labelStyle: TextStyle(color: Colors.black), // Colore del testo della label attiva
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  Center(
-                    child: Icon(
-                      Icons.credit_card,
-                      size: 100,
-                      color: Colors.grey[400],
-                    ),
                   ),
                 ],
               ),
@@ -127,24 +112,107 @@ class _PaymentsPageState extends State<PaymentsPage> {
     );
   }
 
+  // Metodo per costruire un TextField con i colori personalizzati manualmente
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String label,
+    IconData? icon,
+    TextInputType? keyboardType,
+  }) {
+    return TextField(
+      controller: controller,
+      keyboardType: keyboardType,
+      decoration: InputDecoration(
+        labelText: label,
+        prefixIcon: icon != null ? Icon(icon, color: Colors.blue) : null,
+        focusedBorder: const OutlineInputBorder(
+          borderSide: BorderSide(color: Colors.grey),
+        ),
+        enabledBorder: const OutlineInputBorder(
+          borderSide: BorderSide(color: Colors.grey),
+        ),
+        labelStyle: const TextStyle(color: Colors.black),
+      ),
+    );
+  }
+
+  String _obfuscateCardNumber(String cardNumber) {
+    if (cardNumber.length <= 4) return cardNumber;
+    return '*' * (cardNumber.length - 4) + cardNumber.substring(cardNumber.length - 4);
+  }
+
+  // Metodo per aggiungere un nuovo metodo di pagamento
+  Future<void> _addPayment() async {
+    if (_token != null) {
+      final paymentProvider = Provider.of<PaymentProvider>(context, listen: false);
+      final Payment newPayment = Payment(
+        id: 0, // Il backend assegnerà un ID
+        utenteId: 0, // Gestito dal backend tramite token
+        numeroCarta: _obfuscateCardNumber(_numeroCartaController.text),  // Cripta le cifre tranne le ultime 4
+        nomeIntestatario: _nomeIntestatarioController.text,
+        dataScadenza: DateTime.parse("20${_dataScadenzaController.text.substring(3, 5)}-${_dataScadenzaController.text.substring(0, 2)}-01"),
+      );
+
+      await paymentProvider.addPayment(_token!, newPayment);
+
+      // Svuota i campi dopo aver aggiunto la carta
+      _clearFields();
+    } else {
+      print("Token non trovato");
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Pagamenti'),
       ),
-      body: Center(
-        child: ElevatedButton(
-          onPressed: () => _showAddCardModal(context),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.blue,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
-            ),
-          ),
-          child: const Text('Aggiungi carta di credito', style: TextStyle(color: Colors.white)),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0), // Aggiungi padding ai lati
+        child: Consumer<PaymentProvider>(
+          builder: (context, paymentProvider, child) {
+            if (paymentProvider.isLoading) {
+              return const Center(child: CircularProgressIndicator());
+            }
+
+            if (paymentProvider.payments.isEmpty) {
+              return const Center(child: Text('Nessun metodo di pagamento disponibile'));
+            }
+
+            return ListView.builder(
+              itemCount: paymentProvider.payments.length,
+              itemBuilder: (context, index) {
+                final payment = paymentProvider.payments[index];
+                return Card(
+                  child: ListTile(
+                    leading: const Icon(Icons.credit_card, color: Colors.blue), // Forza il colore dell'icona a blu
+                    title: Text(payment.numeroCarta),
+                    subtitle: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Intestatario: ${payment.nomeIntestatario}'),
+                        Text('Scadenza: ${payment.dataScadenza.month}/${payment.dataScadenza.year}'),
+                      ],
+                    ),
+                    trailing: IconButton(
+                      icon: const Icon(Icons.delete, color: Colors.red),
+                      onPressed: () {
+                        paymentProvider.deletePayment(_token!, payment.id);
+                        _clearFields(); // Svuota i campi dopo la cancellazione
+                      },
+                    ),
+                  ),
+                );
+              },
+            );
+          },
         ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => _showAddCardModal(context),
+        backgroundColor: Colors.blue,
+        child: const Icon(Icons.add, color: Colors.white),
       ),
     );
   }

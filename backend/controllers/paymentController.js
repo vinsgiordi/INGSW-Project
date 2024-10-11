@@ -3,17 +3,23 @@ const Payment = require('../models/payment');
 
 // Crea un nuovo metodo di pagamento
 const createPayment = async (req, res) => {
-    const { numero_carta, nome_intestatario, data_scadenza, cvc, indirizzo_fatturazione } = req.body;
+    const { numero_carta, nome_intestatario, data_scadenza } = req.body;
 
     try {
-        const utente_id = req.user.id; // L'ID dell'utente è estratto dal token JWT
+        // Valida che il numero della carta sia di almeno 16 cifre
+        if (!numero_carta || numero_carta.length < 16) {
+            return res.status(StatusCodes.BAD_REQUEST).json({ error: 'Numero della carta non valido' });
+        }
+
+        const utente_id = req.user.id;
+        const ultime_4_cifre = numero_carta.slice(-4);
+
+        // Salva il numero della carta criptato nel formato desiderato
         const payment = await Payment.create({
             utente_id,
-            numero_carta,
+            numero_carta: `**** **** **** ${ultime_4_cifre}`, // Salva solo le ultime 4 cifre
             nome_intestatario,
             data_scadenza,
-            cvc,
-            indirizzo_fatturazione
         });
 
         res.status(StatusCodes.CREATED).json(payment);

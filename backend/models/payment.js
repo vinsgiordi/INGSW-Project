@@ -18,14 +18,6 @@ const Payment = sequelize.define('Payment', {
         type: DataTypes.DATE,
         allowNull: false
     },
-    cvc: {
-        type: DataTypes.STRING,
-        allowNull: false
-    },
-    indirizzo_fatturazione: {
-        type: DataTypes.TEXT,
-        allowNull: true
-    }
 }, {
     timestamps: false,
     createdAt: 'created_at',

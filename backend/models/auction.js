@@ -8,6 +8,9 @@ const Auction = sequelize.define('Auction', {
     },
     tipo: {
         type: DataTypes.STRING,
+        validate: {
+            isIn: [['tempo fisso', 'inglese', 'ribasso', 'silenziosa']]
+        },
         allowNull: false
     },
     data_scadenza: {

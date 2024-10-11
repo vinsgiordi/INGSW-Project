@@ -27,7 +27,11 @@ const User = sequelize.define('User', {
         type: DataTypes.TEXT,
         allowNull: true
     },
-    indirizzo: {
+    indirizzo_di_spedizione: {
+        type: DataTypes.TEXT,
+        allowNull: true
+    },
+    indirizzo_di_fatturazione: {
         type: DataTypes.TEXT,
         allowNull: true
     },
@@ -57,5 +61,10 @@ const User = sequelize.define('User', {
     updatedAt: 'updated_at',
     tableName: 'users'
 });
+
+// Associazione con i prodotti
+User.associate = (models) => {
+    User.hasMany(models.Product, { foreignKey: 'venditore_id', as: 'prodotti' });
+};
 
 module.exports = User;
