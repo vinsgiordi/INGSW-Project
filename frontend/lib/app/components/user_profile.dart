@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
@@ -60,9 +59,6 @@ class _UserProfilePageState extends State<UserProfilePage> {
       await userProvider.getUserData(token);
       setState(() {
         if (userProvider.user != null) {
-          // Log per il debug
-          print("Dati utente caricati correttamente: ${userProvider.user!.nome}");
-
           _nameController.text = userProvider.user!.nome;
           _surnameController.text = userProvider.user!.cognome;
           _dobController.text = userProvider.user!.dataNascita ?? '';
@@ -108,9 +104,11 @@ class _UserProfilePageState extends State<UserProfilePage> {
       return;
     }
 
-    // Prepariamo i dati da aggiornare, escludendo nome e cognome
+    // Prepariamo i dati da aggiornare, inclusi nome, cognome e data di nascita
     final Map<String, dynamic> updatedData = {
-      // Nome e Cognome non sono modificabili, quindi non li includiamo
+      'nome': _nameController.text,
+      'cognome': _surnameController.text,
+      'data_nascita': _dobController.text,
       'short_bio': _bioController.text,
       'sito_web': _websiteController.text,
       'posizione_geografica': _locationController.text,
@@ -130,10 +128,6 @@ class _UserProfilePageState extends State<UserProfilePage> {
       return; // Fermiamo l'esecuzione
     }
 
-    // Stampiamo i dati aggiornati per il debug
-    print("Dati aggiornati da inviare: $updatedData");
-
-    // Aggiorniamo il profilo nel backend
     try {
       await userProvider.updateUser(token, updatedData);
       ScaffoldMessenger.of(context).showSnackBar(
@@ -146,10 +140,8 @@ class _UserProfilePageState extends State<UserProfilePage> {
     }
   }
 
-
   // Metodo per aggiungere i campi social
   void _addSocialField() async {
-    // Mostra una finestra di dialogo per selezionare il social network
     String? selectedSocial = await showDialog<String>(
       context: context,
       builder: (BuildContext context) {
@@ -193,13 +185,11 @@ class _UserProfilePageState extends State<UserProfilePage> {
 
     if (selectedSocial != null) {
       setState(() {
-        // Usa il nome del social selezionato come chiave
         final socialController = TextEditingController();
         _socialControllers[selectedSocial] = socialController;
       });
     }
   }
-
 
   void _removeSocialField(String key) {
     setState(() {
@@ -217,14 +207,14 @@ class _UserProfilePageState extends State<UserProfilePage> {
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.of(context).pop(); // Chiudi il dialog
+                Navigator.of(context).pop();
               },
               child: const Text('Annulla'),
             ),
             TextButton(
               onPressed: () {
-                Navigator.of(context).pop(); // Chiudi il dialog
-                _deleteProfile(); // Esegui l'eliminazione del profilo
+                Navigator.of(context).pop();
+                _deleteProfile();
               },
               child: const Text('Elimina', style: TextStyle(color: Colors.red)),
             ),
@@ -248,8 +238,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
 
     try {
       await userProvider.deleteUser(token);
-      Navigator.of(context).pushReplacementNamed(
-          '/login'); // Torna alla pagina di login
+      Navigator.of(context).pushReplacementNamed('/login');
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Account eliminato con successo.')),
       );
@@ -295,11 +284,11 @@ class _UserProfilePageState extends State<UserProfilePage> {
                       ),
                     ),
                     const SizedBox(height: 16.0),
-                    _buildReadOnlyTextField(_nameController, 'Nome', Icons.person),
+                    _buildEditableTextField(_nameController, 'Nome', Icons.person),
                     const SizedBox(height: 16.0),
-                    _buildReadOnlyTextField(_surnameController, 'Cognome', Icons.person),
+                    _buildEditableTextField(_surnameController, 'Cognome', Icons.person),
                     const SizedBox(height: 16.0),
-                    _buildReadOnlyTextField(_dobController, 'Data di Nascita', Icons.calendar_today),
+                    _buildEditableTextField(_dobController, 'Data di Nascita', Icons.calendar_today),
                     const SizedBox(height: 16.0),
                     _buildReadOnlyTextField(_emailController, 'Indirizzo Email', Icons.email),
 
@@ -452,8 +441,8 @@ class _UserProfilePageState extends State<UserProfilePage> {
                     child: TextFormField(
                       controller: entry.value,
                       decoration: InputDecoration(
-                        filled: true,  // Assicura che il campo sia riempito
-                        fillColor: Colors.blue[50],  // Usa lo stesso colore di sfondo degli altri campi
+                        filled: true,
+                        fillColor: Colors.blue[50],
                         prefixIcon: const Icon(Icons.link, color: Colors.blue),
                         labelText: entry.key,
                         border: const OutlineInputBorder(),
@@ -503,6 +492,19 @@ class _UserProfilePageState extends State<UserProfilePage> {
         prefixIcon: Icon(icon, color: Colors.blue),
       ),
       maxLines: label == 'Short Bio' ? 3 : 1,
+    );
+  }
+
+  Widget _buildEditableTextField(TextEditingController controller, String label, IconData icon) {
+    return TextFormField(
+      controller: controller,
+      decoration: InputDecoration(
+        filled: true,
+        fillColor: Colors.blue[50],
+        labelText: label,
+        border: const OutlineInputBorder(),
+        prefixIcon: Icon(icon, color: Colors.blue),
+      ),
     );
   }
 

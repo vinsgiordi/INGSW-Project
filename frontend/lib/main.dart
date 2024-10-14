@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'app/routes/app_routes.dart';
 import 'app/globals.dart';
+import 'app/controllers/login_controller.dart';
 import 'app/controllers/registration_controller.dart';
 import 'app/data/provider/user_provider.dart';
 import 'app/data/provider/payment_provider.dart';
@@ -12,6 +13,7 @@ import 'app/data/provider/auction_provider.dart';
 import 'app/data/provider/category_provider.dart';
 import 'app/data/provider/seller_provider.dart';
 import 'app/data/provider/favorites_provider.dart';
+import 'app/data/provider/social_login_provider.dart';
 
 
 void main() {
@@ -23,9 +25,10 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MultiProvider(  // Usa MultiProvider per includere UserProvider
+    return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => UserProvider()),  // Provider per l'utente
+        ChangeNotifierProvider(create: (_) => LoginController()), // Provider per il login utente
         ChangeNotifierProvider(create: (_) => RegistrationController()), // Provider per la registrazione utente
         ChangeNotifierProvider(create: (_) => PaymentProvider()), // Provider per il pagamento
         ChangeNotifierProvider(create: (_) => NotificationProvider()), // Provider per le notifiche
@@ -35,6 +38,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => SellerProvider()), // Provider per il venditore
         ChangeNotifierProvider(create: (_) => FavoritesProvider()), // Provider per i preferiti
         ChangeNotifierProvider(create: (_) => SearchProvider()), // Provider per la ricerca
+        ChangeNotifierProvider(create: (_) => SocialLoginProvider()), // Provider per il login con i social network
       ],
       child: MaterialApp(
         title: 'BidHub',

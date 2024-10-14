@@ -111,13 +111,6 @@ class AccountPage extends StatelessWidget {
                   ),
                 ),
               ),
-              ListTile(
-                leading: const Icon(Icons.message),
-                title: const Text('Messaggi'),
-                onTap: () {
-                  // Naviga alla pagina Messaggi
-                },
-              ),
               Consumer<NotificationProvider>(
                 builder: (context, notificationProvider, child) {
                   final int unreadCount = notificationProvider.notifications
