@@ -9,7 +9,8 @@ router.get('/facebook/callback', passport.authenticate('facebook', {
     failureRedirect: '/login'
 }), (req, res) => {
     if (req.user && req.user.token) {
-        res.json({ token: req.user.token });
+        const redirectUrl = `bidhub://auth/callback?token=${req.user.token}`;
+        res.redirect(redirectUrl);
     } else {
         res.status(401).json({ error: 'Autenticazione con Facebook fallita.' });
     }
@@ -22,7 +23,8 @@ router.get('/google/callback', passport.authenticate('google', {
     failureRedirect: '/login'
 }), (req, res) => {
     if (req.user && req.user.token) {
-        res.json({ token: req.user.token });
+        const redirectUrl = `bidhub://auth/callback?token=${req.user.token}`;
+        res.redirect(redirectUrl);
     } else {
         res.status(401).json({ error: 'Autenticazione con Google fallita.' });
     }
@@ -35,11 +37,13 @@ router.get('/github/callback', passport.authenticate('github', {
     failureRedirect: '/login'
 }), (req, res) => {
     if (req.user && req.user.token) {
-        res.json({ token: req.user.token });
+        const redirectUrl = `bidhub://auth/callback?token=${req.user.token}`;
+        res.redirect(redirectUrl);
     } else {
         res.status(401).json({ error: 'Autenticazione con GitHub fallita.' });
     }
 });
+
 
 // Autenticazione con LinkedIn
 router.get('/linkedin', passport.authenticate('linkedin', { scope: ['openid', 'profile', 'email'] }));
@@ -48,7 +52,8 @@ router.get('/linkedin/callback', passport.authenticate('linkedin', {
     failureRedirect: '/login'
 }), (req, res) => {
     if (req.user && req.user.token) {
-        res.json({ token: req.user.token });
+        const redirectUrl = `bidhub://auth/callback?token=${req.user.token}`;
+        res.redirect(redirectUrl);
     } else {
         res.status(401).json({ error: 'Autenticazione con LinkedIn fallita.' });
     }
