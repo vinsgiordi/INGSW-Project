@@ -189,7 +189,7 @@ class LoginPage extends StatelessWidget {
                             child: IconButton(
                               icon: Image.asset('images/google_icon.png'), // Icona per Google
                               onPressed: () {
-                                Provider.of<LoginController>(context, listen: false).loginWithGoogle();
+                                Provider.of<LoginController>(context, listen: false).loginWithSocial(context, 'google');
                               },
                             ),
                           ),
@@ -199,7 +199,7 @@ class LoginPage extends StatelessWidget {
                             child: IconButton(
                               icon: Image.asset('images/facebook_icon.png'), // Icona per Facebook
                               onPressed: () {
-                                Provider.of<LoginController>(context, listen: false).loginWithFacebook();
+                                Provider.of<LoginController>(context, listen: false).loginWithSocial(context, 'facebook');
                               },
                             ),
                           ),
@@ -209,7 +209,7 @@ class LoginPage extends StatelessWidget {
                             child: IconButton(
                               icon: Image.asset('images/github_icon.png'), // Icona per GitHub
                               onPressed: () {
-                                Provider.of<LoginController>(context, listen: false).loginWithGitHub();
+                                Provider.of<LoginController>(context, listen: false).loginWithSocial(context, 'github');
                               },
                             ),
                           ),
@@ -219,7 +219,7 @@ class LoginPage extends StatelessWidget {
                             child: IconButton(
                               icon: Image.asset('images/linkedin_icon.png'), // Icona per LinkedIn
                               onPressed: () {
-                                Provider.of<LoginController>(context, listen: false).loginWithLinkedIn();
+                                Provider.of<LoginController>(context, listen: false).loginWithSocial(context, 'linkedin');
                               },
                             ),
                           ),

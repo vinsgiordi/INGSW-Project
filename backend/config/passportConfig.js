@@ -106,7 +106,7 @@ passport.use(new GitHubStrategy({
         let existingUser = await User.findOne({ where: { email: email } });
         if (existingUser) {
             // Se esiste un utente con questa email, invia un errore
-            return done(null, false, { message: 'Email già utilizzata con un altro account social.' });
+            return done(null, existingUser);
         }
 
         let user = await User.create({
@@ -120,11 +120,7 @@ passport.use(new GitHubStrategy({
         const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '1h' });
         return done(null, { token });
     } catch (error) {
-        if (error.name === 'SequelizeUniqueConstraintError') {
-            return done(null, false, { message: 'Email già utilizzata. Per favore, usa un altro metodo di accesso.' });
-        } else {
-            return done(error, false);
-        }
+         return done(error, false);
     }
 }));
 
@@ -159,6 +155,7 @@ passport.use(new LinkedInStrategy({
         const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '1h' });
         return done(null, { token });
     } catch (error) {
+        console.error('Errore durante la creazione dell\'utente LinkedIn:', error);
         return done(error, false);
     }
 }));

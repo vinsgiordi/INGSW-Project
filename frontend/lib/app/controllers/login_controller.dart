@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:url_launcher/url_launcher.dart';
 import '../data/provider/user_provider.dart';
+import '../data/provider/social_login_provider.dart';
 
 class LoginController with ChangeNotifier {
   final TextEditingController nomeController = TextEditingController();
@@ -94,42 +94,18 @@ class LoginController with ChangeNotifier {
     Navigator.pushReplacementNamed(context, '/login');
   }
 
-  // Funzioni di login Social
-  Future<void> loginWithGoogle() async {
-    const url = 'http://10.0.2.2:3000/auth/google';
-    if (await canLaunch(url)) {
-      await launch(url);
-    } else {
-      throw 'Could not launch $url';
+  // Funzione per il login social usando SocialLoginProvider
+  Future<void> loginWithSocial(BuildContext context, String provider) async {
+    try {
+      final socialLoginProvider = Provider.of<SocialLoginProvider>(context, listen: false);
+      await socialLoginProvider.loginWithSocial(provider, context);
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Errore durante il login social: $e')),
+      );
     }
   }
 
-  Future<void> loginWithFacebook() async {
-    const url = 'http://10.0.2.2:3000/auth/facebook';
-    if (await canLaunch(url)) {
-      await launch(url);
-    } else {
-      throw 'Could not launch $url';
-    }
-  }
-
-  Future<void> loginWithGitHub() async {
-    const url = 'http://10.0.2.2:3000/auth/github';
-    if (await canLaunch(url)) {
-      await launch(url);
-    } else {
-      throw 'Could not launch $url';
-    }
-  }
-
-  Future<void> loginWithLinkedIn() async {
-    const url = 'http://10.0.2.2:3000/auth/linkedin';
-    if (await canLaunch(url)) {
-      await launch(url);
-    } else {
-      throw 'Could not launch $url';
-    }
-  }
 
   @override
   void dispose() {
