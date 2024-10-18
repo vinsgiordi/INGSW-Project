@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
-import '../../category/categories.dart';
+import 'package:provider/provider.dart';
+import 'package:intl/intl.dart';
+import '../../../../../../services/storage_service.dart';
+import '../../../../../data/provider/auction_provider.dart';
+import '../../../category/categories.dart';
 
 class SilentAuctionPage extends StatefulWidget {
   const SilentAuctionPage({Key? key}) : super(key: key);
@@ -15,8 +19,9 @@ class _SilentAuctionPageState extends State<SilentAuctionPage> {
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _endDateController = TextEditingController();
+  final TextEditingController _priceController = TextEditingController(); // Aggiunto il controller per il prezzo
   DateTime? _selectedDate;
-  String _selectedCategory = CategoriesPage.categories[0]['name'];
+  int _selectedCategoryId = 1; // ID predefinito per la categoria
   List<File> _images = [];
 
   Future<void> _pickImage() async {
@@ -38,8 +43,54 @@ class _SilentAuctionPageState extends State<SilentAuctionPage> {
     if (picked != null && picked != _selectedDate) {
       setState(() {
         _selectedDate = picked;
-        _endDateController.text = "${_selectedDate!.day}/${_selectedDate!.month}/${_selectedDate!.year}";
+        _endDateController.text = DateFormat('yyyy-MM-dd').format(_selectedDate!);
       });
+    }
+  }
+
+  // Funzione per creare un'asta silenziosa
+  Future<void> _createSilentAuction(BuildContext context) async {
+    if (_formKey.currentState!.validate()) {
+      try {
+        // Ottieni il token
+        String? token = await StorageService().getAccessToken();
+
+        if (token == null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Token non trovato, effettua il login.')),
+          );
+          return;
+        }
+
+        // Dati da inviare per l'asta silenziosa
+        Map<String, dynamic> auctionData = {
+          'titolo': _titleController.text,
+          'descrizione': _descriptionController.text,
+          'categoria_id': _selectedCategoryId,
+          'tipo': 'silenziosa',
+          'stato': 'attiva', // Imposta lo stato come attiva
+          'data_scadenza': _selectedDate?.toIso8601String(), // Data di scadenza selezionata
+          'prezzo_iniziale': double.parse(_priceController.text), // Usare il valore del prezzo inserito
+        };
+
+        // Logica per inviare l'asta silenziosa tramite provider
+        await Provider.of<AuctionProvider>(context, listen: false).createAuction(
+          token,
+          auctionData,
+          _images.isNotEmpty ? _images[0].path : null, // Invia immagine solo se presente
+        );
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Asta silenziosa creata con successo!')),
+        );
+
+        Navigator.pop(context); // Torna indietro alla schermata precedente
+      } catch (e) {
+        print("Errore: $e");
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Errore nella creazione dell\'asta silenziosa')),
+        );
+      }
     }
   }
 
@@ -60,7 +111,7 @@ class _SilentAuctionPageState extends State<SilentAuctionPage> {
                   key: _formKey,
                   child: Column(
                     children: [
-                      const SizedBox(height: 16.0), // Padding tra l'appbar e il titolo
+                      const SizedBox(height: 16.0),
                       TextFormField(
                         controller: _titleController,
                         decoration: InputDecoration(
@@ -113,14 +164,39 @@ class _SilentAuctionPageState extends State<SilentAuctionPage> {
                       ),
                       const SizedBox(height: 16.0),
                       TextFormField(
+                        controller: _priceController, // Aggiunto campo per il prezzo
+                        decoration: InputDecoration(
+                          filled: true,
+                          fillColor: Colors.blue[50],
+                          labelText: 'Prezzo Iniziale (€)',
+                          border: const OutlineInputBorder(),
+                          prefixIcon: const Icon(Icons.attach_money, color: Colors.blue),
+                          labelStyle: const TextStyle(color: Colors.blue),
+                          hintStyle: const TextStyle(color: Colors.blueGrey),
+                          focusedBorder: const OutlineInputBorder(
+                            borderSide: BorderSide(color: Colors.blue),
+                          ),
+                          enabledBorder: const OutlineInputBorder(
+                            borderSide: BorderSide(color: Colors.blueGrey),
+                          ),
+                        ),
+                        keyboardType: TextInputType.number, // Il campo accetta solo numeri
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Per favore inserisci un prezzo iniziale';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 16.0),
+                      TextFormField(
                         controller: _endDateController,
                         decoration: InputDecoration(
                           filled: true,
                           fillColor: Colors.blue[50],
                           labelText: 'Data di Scadenza',
                           border: const OutlineInputBorder(),
-                          prefixIcon: const Icon(Icons.calendar_today, color: Colors.blue),
-                          suffixIcon: IconButton(
+                          prefixIcon: IconButton(
                             icon: const Icon(Icons.calendar_today, color: Colors.blue),
                             onPressed: () {
                               _selectDate(context);
@@ -144,8 +220,8 @@ class _SilentAuctionPageState extends State<SilentAuctionPage> {
                         },
                       ),
                       const SizedBox(height: 16.0),
-                      DropdownButtonFormField<String>(
-                        value: _selectedCategory,
+                      DropdownButtonFormField<int>(
+                        value: _selectedCategoryId,
                         decoration: InputDecoration(
                           filled: true,
                           fillColor: Colors.blue[50],
@@ -161,19 +237,21 @@ class _SilentAuctionPageState extends State<SilentAuctionPage> {
                             borderSide: BorderSide(color: Colors.blueGrey),
                           ),
                         ),
-                        items: CategoriesPage.categories.map((category) {
-                          return DropdownMenuItem<String>(
-                            value: category['name'],
+                        items: CategoriesPage.categories.asMap().entries.map((entry) {
+                          int index = entry.key;
+                          var category = entry.value;
+                          return DropdownMenuItem<int>(
+                            value: index + 1, // ID della categoria
                             child: Text(category['name']),
                           );
                         }).toList(),
-                        onChanged: (value) {
+                        onChanged: (int? value) {
                           setState(() {
-                            _selectedCategory = value!;
+                            _selectedCategoryId = value ?? 1; // Imposta un ID predefinito
                           });
                         },
                         validator: (value) {
-                          if (value == null || value.isEmpty) {
+                          if (value == null) {
                             return 'Per favore seleziona una categoria';
                           }
                           return null;
@@ -183,7 +261,7 @@ class _SilentAuctionPageState extends State<SilentAuctionPage> {
                       ElevatedButton(
                         onPressed: _pickImage,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blue, // Colore blu per il bottone
+                          backgroundColor: Colors.blue,
                           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8),
@@ -218,24 +296,17 @@ class _SilentAuctionPageState extends State<SilentAuctionPage> {
                       ),
                       const SizedBox(height: 30.0),
                       ElevatedButton(
-                        onPressed: () {
-                          if (_formKey.currentState!.validate()) {
-                            // Logica per creare l'asta silenziosa
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Asta creata con successo!')),
-                            );
-                          }
-                        },
+                        onPressed: () => _createSilentAuction(context),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blue, // Colore blu per il bottone
-                          padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15), // Aumenta il padding
+                          backgroundColor: Colors.blue,
+                          padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(20),
                           ),
                         ),
                         child: const Text(
                           'Crea Asta',
-                          style: TextStyle(color: Colors.white, fontSize: 15), // Testo bianco per il bottone
+                          style: TextStyle(color: Colors.white, fontSize: 15),
                         ),
                       ),
                     ],

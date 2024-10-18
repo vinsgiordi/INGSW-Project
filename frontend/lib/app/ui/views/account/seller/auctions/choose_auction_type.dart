@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../../routes/app_routes.dart';
+import '../../../../../routes/app_routes.dart';
 
 class ChooseAuctionTypePage extends StatelessWidget {
   const ChooseAuctionTypePage({Key? key}) : super(key: key);

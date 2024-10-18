@@ -79,13 +79,6 @@ class AccountPage extends StatelessWidget {
                 },
               ),
               ListTile(
-                leading: const Icon(Icons.access_time),
-                title: const Text('In elaborazione'),
-                onTap: () {
-                  Navigator.pushNamed(context, AppRoutes.inProgess);
-                },
-              ),
-              ListTile(
                 leading: const Icon(Icons.shopping_cart),
                 title: const Text('Venduti'),
                 onTap: () {

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
-import '../../category/categories.dart';
+import '../../../../../../services/storage_service.dart';
+import '../../../../../data/provider/auction_provider.dart';
+import '../../../category/categories.dart';
 
 class ReverseAuctionPage extends StatefulWidget {
   const ReverseAuctionPage({Key? key}) : super(key: key);
@@ -18,7 +20,7 @@ class _ReverseAuctionPageState extends State<ReverseAuctionPage> {
   final TextEditingController _priceDecrementController = TextEditingController();
   final TextEditingController _minPriceController = TextEditingController();
   final TextEditingController _timerController = TextEditingController(text: '1'); // Default 1 ora
-  String _selectedCategory = CategoriesPage.categories[0]['name'];
+  String _selectedCategory = CategoriesPage.categories[0]['id'].toString(); // Assicurati che sia una stringa
   List<File> _images = [];
 
   Future<void> _pickImage() async {
@@ -27,6 +29,50 @@ class _ReverseAuctionPageState extends State<ReverseAuctionPage> {
       setState(() {
         _images.add(File(pickedFile.path));
       });
+    }
+  }
+
+  Future<void> _submitAuction() async {
+    if (_formKey.currentState!.validate()) {
+      // Prepara i dati dell'asta per il backend
+      final auctionData = {
+        'titolo': _titleController.text,
+        'descrizione': _descriptionController.text,
+        'prezzo_iniziale': double.parse(_initialPriceController.text),
+        'decremento_prezzo': double.parse(_priceDecrementController.text),
+        'prezzo_minimo': double.parse(_minPriceController.text),
+        'categoria_id': _selectedCategory,
+        'tipo': 'ribasso',
+        'stato': 'attiva',
+        'data_scadenza': DateTime.now().add(Duration(hours: int.parse(_timerController.text))).toIso8601String(),
+        'timer_decremento': int.parse(_timerController.text),
+      };
+
+      // Recupera il token dallo storage
+      String? token = await StorageService().getAccessToken();
+      print("Token recuperato: $token");  // Aggiungi un log per vedere se il token è valido
+
+      if (token == null) {
+        print("Token non presente o nullo");
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Token non trovato, per favore effettua il login.')),
+        );
+        return;
+      }
+
+      try {
+        // Chiamata API per creare l'asta
+        await AuctionProvider().createAuction(token, auctionData, _images.isNotEmpty ? _images[0].path : null);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Asta al ribasso creata con successo!')),
+        );
+        Navigator.of(context).pop();
+      } catch (e) {
+        print('Errore durante la creazione dell\'asta: $e');
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Errore durante la creazione dell\'asta')),
+        );
+      }
     }
   }
 
@@ -47,7 +93,7 @@ class _ReverseAuctionPageState extends State<ReverseAuctionPage> {
                   key: _formKey,
                   child: Column(
                     children: [
-                      const SizedBox(height: 16.0), // Padding tra l'appbar e il titolo
+                      const SizedBox(height: 16.0),
                       TextFormField(
                         controller: _titleController,
                         decoration: InputDecoration(
@@ -222,7 +268,7 @@ class _ReverseAuctionPageState extends State<ReverseAuctionPage> {
                         ),
                         items: CategoriesPage.categories.map((category) {
                           return DropdownMenuItem<String>(
-                            value: category['name'],
+                            value: category['id'].toString(),
                             child: Text(category['name']),
                           );
                         }).toList(),
@@ -242,7 +288,7 @@ class _ReverseAuctionPageState extends State<ReverseAuctionPage> {
                       ElevatedButton(
                         onPressed: _pickImage,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blue, // Colore blu per il bottone
+                          backgroundColor: Colors.blue,
                           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8),
@@ -277,24 +323,17 @@ class _ReverseAuctionPageState extends State<ReverseAuctionPage> {
                       ),
                       const SizedBox(height: 30.0),
                       ElevatedButton(
-                        onPressed: () {
-                          if (_formKey.currentState!.validate()) {
-                            // Logica per creare l'asta al ribasso
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Asta creata con successo!')),
-                            );
-                          }
-                        },
+                        onPressed: _submitAuction,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blue, // Colore blu per il bottone
-                          padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15), // Aumenta il padding
+                          backgroundColor: Colors.blue,
+                          padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(20),
                           ),
                         ),
                         child: const Text(
                           'Crea Asta',
-                          style: TextStyle(color: Colors.white, fontSize: 15), // Testo bianco per il bottone
+                          style: TextStyle(color: Colors.white, fontSize: 15),
                         ),
                       ),
                     ],

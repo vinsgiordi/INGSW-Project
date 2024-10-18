@@ -16,19 +16,19 @@ import '../../../components/bottom_navbar.dart';
 
 class CategoriesPage extends StatelessWidget {
   static final List<Map<String, dynamic>> categories = [
-    {"name": "Arte", "color": Colors.green.shade200, "page": const ArtPage()},
-    {"name": "Gioielli", "color": Colors.blueGrey.shade200, "page": const JewelryPage()},
-    {"name": "Orologi da polso", "color": Colors.teal.shade200, "page": const WatchesPage()},
-    {"name": "Moda", "color": Colors.pink.shade200, "page": const FashionsPage()},
-    {"name": "Monete e francobolli", "color": Colors.purple.shade200, "page": const CoinsAndStampsPage()},
-    {"name": "Fumetti e animazione", "color": Colors.cyan.shade200, "page": const ComicsAndAnimationPage()},
-    {"name": "Auto e moto", "color": Colors.brown.shade200, "page": const CarsAndMotorcyclesPage()},
-    {"name": "Carte collezionabili", "color": Colors.orange.shade200, "page": const CollectibleCardsPage()},
-    {"name": "Giocattoli e modellini", "color": Colors.deepOrange.shade200, "page": const ToysAndModelsPage()},
-    {"name": "Archeologia e reperti", "color": Colors.brown.shade200, "page": ArchaeologyPage()},
-    {"name": "Sport", "color": Colors.yellow.shade200, "page": const SportsPage()},
-    {"name": "Musica, film e fotocamere", "color": Colors.red.shade200, "page": const MusicFilmAndCamerasPage()},
-    {"name": "Libri e cimeli storici", "color": Colors.green.shade200, "page":  const BooksAndHistoricalMemorabiliaPage()},
+    {"id": 1, "name": "Arte", "color": Colors.green.shade200, "page": const ArtPage()},
+    {"id": 2, "name": "Gioielli", "color": Colors.blueGrey.shade200, "page": const JewelryPage()},
+    {"id": 3, "name": "Orologi da polso", "color": Colors.teal.shade200, "page": const WatchesPage()},
+    {"id": 4, "name": "Moda", "color": Colors.pink.shade200, "page": const FashionsPage()},
+    {"id": 5, "name": "Monete e francobolli", "color": Colors.purple.shade200, "page": const CoinsAndStampsPage()},
+    {"id": 6, "name": "Fumetti e animazione", "color": Colors.cyan.shade200, "page": const ComicsAndAnimationPage()},
+    {"id": 7, "name": "Auto e moto", "color": Colors.brown.shade200, "page": const CarsAndMotorcyclesPage()},
+    {"id": 8, "name": "Carte collezionabili", "color": Colors.orange.shade200, "page": const CollectibleCardsPage()},
+    {"id": 9, "name": "Giocattoli e modellini", "color": Colors.deepOrange.shade200, "page": const ToysAndModelsPage()},
+    {"id": 10, "name": "Archeologia e reperti", "color": Colors.brown.shade200, "page": ArchaeologyPage()},
+    {"id": 11, "name": "Sport", "color": Colors.yellow.shade200, "page": const SportsPage()},
+    {"id": 12, "name": "Musica, film e fotocamere", "color": Colors.red.shade200, "page": const MusicFilmAndCamerasPage()},
+    {"id": 13, "name": "Libri e cimeli storici", "color": Colors.green.shade200, "page":  const BooksAndHistoricalMemorabiliaPage()},
   ];
 
   @override

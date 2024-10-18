@@ -6,7 +6,7 @@ class AuctionRequests {
   final String baseUrl = 'http://10.0.2.2:3000'; // Sostituisci con l'URL del tuo server
 
   // Crea una nuova asta
-  Future<Auction> createAuction(String token, Map<String, dynamic> auctionData) async {
+  Future<http.Response> createAuction(String token, Map<String, dynamic> auctionData) async {
     final response = await http.post(
       Uri.parse('$baseUrl/api/auctions/create'),
       headers: {
@@ -16,12 +16,14 @@ class AuctionRequests {
       body: jsonEncode(auctionData),
     );
 
-    if (response.statusCode == 201) {
-      return Auction.fromJson(json.decode(response.body));
-    } else {
-      throw Exception('Failed to create auction');
+    // Stampa dettagli della risposta in caso di errore
+    if (response.statusCode != 201) {
+      print('Errore durante la creazione dell\'asta: ${response.statusCode}, ${response.body}');
     }
+
+    return response;  // Torna l'intera risposta per ulteriori controlli
   }
+
 
   // Recupera tutte le aste
   Future<List<Auction>> getAllAuctions(String token) async {
