@@ -18,6 +18,9 @@ const searchRoutes = require('./routes/searchRoutes');
 
 const app = express();
 
+// Job cron
+const auctionScheduler = require('./jobs/auctionScheduler');
+
 // Middleware per il parsing del JSON
 app.use(bodyParser.json());
 
@@ -63,7 +66,11 @@ app.use(cors({
 }));
 
 // Avvio del server
-db.sequelize.sync({ force: false }) // Non usiamo `force: true` per evitare di cancellare i dati
+db.sequelize.sync({ alter: true })
+/* Utilizziamo `alter: true` per la sincronizzazione del database
+   altrimenti `force: false` per evitare la sincronizzazione
+   non utilizziamo `force: true` per evitare di cancellare i dati
+*/
   .then(() => {
     console.log('Database sincronizzato correttamente');
     const PORT = process.env.PORT || 3000;

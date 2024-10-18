@@ -5,44 +5,90 @@ const Bid = require('../models/bid');
 const Category = require('../models/category');
 const { User } = require('../models/associations');
 const { Op } = require('sequelize');
+const auctionService = require('../services/auctionServices');
+const dayjs = require('../utils/dayjs');
+
+// Funzione per formattare le date in UTC
+const formatDateUTC = (date) => {
+  return dayjs(date).tz('Europe/Rome').utc().format();
+};
 
 // Crea una nuova asta
 const createAuction = async (req, res) => {
-    const { prodotto_id, tipo, data_scadenza, prezzo_minimo, incremento_rialzo, decremento_prezzo, prezzo_iniziale, stato } = req.body;
+    const {
+        tipo, data_scadenza, prezzo_minimo, incremento_rialzo, decremento_prezzo,
+        prezzo_iniziale, stato, titolo, descrizione, categoria_id, immagine_principale, timer_decremento
+    } = req.body;
 
     try {
-      if (!prodotto_id || !tipo || !data_scadenza || !prezzo_iniziale || !stato) {
-        return res.status(StatusCodes.BAD_REQUEST).json({
-          error: "Per favore inserisci tutte le informazioni richieste!"
+        console.log('Dati ricevuti dall\'API:', req.body);
+
+        // Validazione di base per i campi richiesti
+        if (!tipo || !data_scadenza || !prezzo_iniziale || !stato || !titolo || !descrizione || !categoria_id) {
+            console.error('Errore: uno o più campi obbligatori mancanti');
+            return res.status(400).json({
+                error: "Per favore inserisci tutte le informazioni richieste per il prodotto e l'asta."
+            });
+        }
+
+        // Verifica se la categoria esiste
+        const category = await Category.findByPk(categoria_id);
+        if (!category) {
+            console.error('Errore: categoria non trovata');
+            return res.status(404).json({ error: "Categoria non trovata" });
+        }
+
+        // Crea il prodotto nel database
+        console.log('Creazione prodotto con i dati:', { titolo, descrizione, prezzo_iniziale, immagine_principale, categoria_id });
+        const product = await Product.create({
+            nome: titolo,
+            descrizione,
+            prezzo_iniziale,
+            immagine_principale: immagine_principale || null,
+            categoria_id,
+            venditore_id: req.user.id // L'utente autenticato è il venditore
         });
-      }
 
-      // Recupera il prodotto per trovare il venditore_id
-      const product = await Product.findByPk(prodotto_id);
-      if (!product) {
-        return res.status(StatusCodes.NOT_FOUND).json({
-          error: "Prodotto non trovato"
-        });
-      }
+        // Converti la data di scadenza in UTC (fuso orario Europe/Rome)
+        const dataScadenzaUTC = formatDateUTC(data_scadenza);
+        console.log('Data di scadenza UTC:', dataScadenzaUTC);
 
-      // Crea l'asta e associa automaticamente il venditore_id del prodotto
-      const auction = await Auction.create({
-        prodotto_id,
-        tipo,
-        data_scadenza,
-        prezzo_minimo,
-        incremento_rialzo,
-        decremento_prezzo,
-        prezzo_iniziale,
-        stato,
-        venditore_id: product.venditore_id // Associa il venditore dal prodotto
-      });
+        // Configura l'asta in base al tipo di asta
+        let auctionData = {
+            prodotto_id: product.id,
+            tipo,
+            data_scadenza: dataScadenzaUTC,  // Usa la data convertita in UTC
+            prezzo_iniziale,
+            stato,
+            venditore_id: req.user.id
+        };
 
-      res.status(StatusCodes.CREATED).json(auction);
+        // Aggiungi campi opzionali solo se necessari
+        if (tipo === 'inglese' && incremento_rialzo) {
+            auctionData.incremento_rialzo = incremento_rialzo;
+        }
+
+        if (tipo === 'ribasso') {
+            if (decremento_prezzo) auctionData.decremento_prezzo = decremento_prezzo;
+            if (timer_decremento) auctionData.timer_decremento = timer_decremento;
+        }
+
+        if (prezzo_minimo) {
+            auctionData.prezzo_minimo = prezzo_minimo;
+        }
+
+        console.log('Dati finali per l\'asta:', auctionData);
+
+        // Crea l'asta nel database
+        const auction = await Auction.create(auctionData);
+
+        return res.status(201).json({ product, auction });
     } catch (error) {
-      res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: error.message });
+        console.log('Errore nella creazione dell\'asta:', error);
+        return res.status(500).json({ error: 'Errore interno al server' });
     }
 };
+
 
 // Recupera tutte le aste
 const getAllAuctions = async (req, res) => {
@@ -57,7 +103,6 @@ const getAllAuctions = async (req, res) => {
                     model: User,    // Collega il modello User
                     as: 'venditore', // Nome dell'alias
                     attributes: ['id', 'nome', 'cognome']
-
                 },
                 {
                     model: Bid, // Include anche le offerte associate all'asta
@@ -257,9 +302,12 @@ const updateAuction = async (req, res) => {
             return res.status(StatusCodes.UNAUTHORIZED).json({ error: 'Non autorizzato' });
         }
 
+        // Converti la data di scadenza in UTC (fuso orario Europe/Rome)
+        const dataScadenzaUTC = data_scadenza ? formatDateUTC(data_scadenza) : auction.data_scadenza;
+
         auction.prodotto_id = prodotto_id || auction.prodotto_id;
         auction.tipo = tipo || auction.tipo;
-        auction.data_scadenza = data_scadenza || auction.data_scadenza;
+        auction.data_scadenza = dataScadenzaUTC;
         auction.prezzo_minimo = prezzo_minimo || auction.prezzo_minimo;
         auction.incremento_rialzo = incremento_rialzo || auction.incremento_rialzo;
         auction.decremento_prezzo = decremento_prezzo || auction.decremento_prezzo;
@@ -271,6 +319,28 @@ const updateAuction = async (req, res) => {
     } catch (error) {
         res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: error.message });
     }
+};
+
+const handleAuctionCompletion = async (req, res) => {
+    const auctionId = req.params.id;
+    const auction = await Auction.findByPk(auctionId);
+
+    if (!auction) {
+        return res.status(404).json({ error: 'Asta non trovata' });
+    }
+
+    if (auction.tipo === 'tempo fisso') {
+        await auctionService.handleAuctionExpiration(auction);
+    } else if (auction.tipo === 'inglese') {
+        await auctionService.handleEnglishAuctionExpiration(auction);
+    } else if (auction.tipo === 'ribasso') {
+        await auctionService.handleReverseAuction(auction);
+    } else if (auction.tipo === 'silenziosa') {
+        const { acceptedBidId } = req.body;
+        await auctionService.acceptSilentAuctionBid(auction, acceptedBidId);
+    }
+
+    res.status(200).json({ message: 'Asta gestita correttamente' });
 };
 
 // Cancella un'asta per ID
@@ -304,5 +374,6 @@ module.exports = {
     getAuctionsByEndingSoon,
     getAuctionsByType,
     updateAuction,
+    handleAuctionCompletion,
     deleteAuction
 };

@@ -40,7 +40,11 @@ const Auction = sequelize.define('Auction', {
     venditore_id: {
         type: DataTypes.INTEGER,
         allowNull: false
-    }
+    },
+    timer_decremento: {
+        type: DataTypes.INTEGER,
+        allowNull: true // Solo per aste al ribasso, può essere null
+    },
 }, {
     timestamps: true,
     createdAt: 'created_at',

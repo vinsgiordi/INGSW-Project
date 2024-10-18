@@ -54,6 +54,10 @@ const User = sequelize.define('User', {
     social_provider: {
         type: DataTypes.STRING,
         allowNull: true
+    },
+    avatar: {
+        type: DataTypes.STRING,
+        allowNull: true
     }
 }, {
     timestamps: true,
