@@ -6,3 +6,5 @@ frontend/android
 frontend/ios
 frontend/test
 frontend/.metadata
+
+db_dump/
