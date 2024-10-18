@@ -4,7 +4,7 @@ import '../models/category_model.dart';
 
 class CategoryRequests {
   // Definisci l'URL di base per l'API
-  final String baseUrl = 'http://10.0.2.2:3000'; // Modifica se necessario per adattarsi all'ambiente di produzione o test
+  final String baseUrl = 'http://10.0.2.2:3000';
 
   // Funzione per recuperare tutte le categorie dall'API
   Future<List<Category>> getAllCategories() async {

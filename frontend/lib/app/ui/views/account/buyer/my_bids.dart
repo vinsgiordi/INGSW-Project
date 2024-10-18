@@ -10,7 +10,7 @@ class MyBidsPage extends StatefulWidget {
   _MyBidsPageState createState() => _MyBidsPageState();
 }
 
-class _MyBidsPageState extends State<MyBidsPage> {
+class _MyBidsPageState extends State<MyBidsPage> with AutomaticKeepAliveClientMixin {
   bool isLoading = true;
   bool isError = false;
   String? _currentUserToken;
@@ -23,6 +23,24 @@ class _MyBidsPageState extends State<MyBidsPage> {
     });
   }
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _loadBids();  // Carica nuovamente le offerte quando le dipendenze cambiano
+  }
+
+  @override
+  void didUpdateWidget(covariant MyBidsPage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _loadBids();
+  }
+
+  @override
+  void dispose() {
+    // Assicurati di chiamare il dispose super.
+    super.dispose();
+  }
+
   Future<void> _loadBids() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     _currentUserToken = prefs.getString('accessToken'); // Recupera il token da SharedPreferences
@@ -30,11 +48,16 @@ class _MyBidsPageState extends State<MyBidsPage> {
     if (_currentUserToken != null) {
       try {
         await Provider.of<BidProvider>(context, listen: false).fetchBidsByUser(_currentUserToken!);
+
+        // Controlla se il widget è ancora montato prima di chiamare setState
+        if (!mounted) return;
+
         setState(() {
           isLoading = false;
         });
       } catch (e) {
         print('Errore nel caricamento delle offerte: $e');
+        if (!mounted) return;
         setState(() {
           isLoading = false;
           isError = true;
@@ -42,6 +65,7 @@ class _MyBidsPageState extends State<MyBidsPage> {
       }
     } else {
       print('Token non disponibile');
+      if (!mounted) return;
       setState(() {
         isLoading = false;
         isError = true;
@@ -51,6 +75,7 @@ class _MyBidsPageState extends State<MyBidsPage> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);  // Required when using AutomaticKeepAliveClientMixin
     final bidProvider = Provider.of<BidProvider>(context);
     final bids = bidProvider.bids;
 
@@ -71,7 +96,6 @@ class _MyBidsPageState extends State<MyBidsPage> {
         itemBuilder: (context, index) {
           final bid = bids[index];
           Auction? auction = bid.auction;
-
           return GestureDetector(
             onTap: () {
               Navigator.push(
@@ -87,8 +111,8 @@ class _MyBidsPageState extends State<MyBidsPage> {
               child: ListTile(
                 leading: ClipRRect(
                   borderRadius: BorderRadius.circular(8.0),
-                  child: Image.network(
-                    auction?.productImage ?? 'https://via.placeholder.com/150',
+                  child: Image.asset(
+                    auction?.productImage ?? 'images/150.png', // Usa una risorsa locale se l'immagine è assente
                     width: 60,
                     height: 60,
                     fit: BoxFit.cover,
@@ -112,7 +136,8 @@ class _MyBidsPageState extends State<MyBidsPage> {
                 trailing: IconButton(
                   icon: const Icon(Icons.delete, color: Colors.red),
                   onPressed: () {
-                    _deleteBid(bid.id); // Implementa la logica per eliminare l'offerta
+                    print('Eliminazione dell\'offerta con ID: ${bid.id}');
+                    _deleteBid(bid.id);
                   },
                 ),
               ),
@@ -125,9 +150,14 @@ class _MyBidsPageState extends State<MyBidsPage> {
 
   Future<void> _deleteBid(int bidId) async {
     try {
+      print('Tentativo di eliminazione dell\'offerta con ID: $bidId');
       await Provider.of<BidProvider>(context, listen: false).deleteBid(_currentUserToken!, bidId);
+      print('Offerta eliminata con successo');
     } catch (e) {
       print('Errore durante l\'eliminazione dell\'offerta: $e');
     }
   }
+
+  @override
+  bool get wantKeepAlive => true;  // Mantiene lo stato della pagina anche quando si naviga avanti e indietro
 }

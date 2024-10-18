@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../data/models/auction_model.dart';
 import '../data/provider/auction_provider.dart';
 import '../data/provider/favorites_provider.dart';
 import '../data/provider/seller_provider.dart';
-import '../data/provider/user_provider.dart';
 import '../data/provider/bid_provider.dart';
 import 'seller_profile.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -43,8 +43,6 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     String? token = prefs.getString('accessToken');
 
     if (token != null) {
-      print('Token: $token'); // Debug
-
       try {
         // Carica l'asta
         Auction? fetchedAuction = await auctionProvider.fetchAuctionById(token, widget.auctionId);
@@ -54,12 +52,14 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
             _isFavorite = favoritesProvider.isFavorite(auction!); // Verifica se l'asta è nei preferiti
           });
 
-          // Carica le offerte
-          await bidProvider.fetchBidsByProduct(token, auction!.prodottoId);
+          // Carica le offerte solo se l'asta non è di tipo silenzioso
+          if (auction!.tipo != 'silenziosa') {
+            await bidProvider.fetchBidsByProduct(token, auction!.prodottoId);
 
-          // Trova l'offerta più alta
-          if (bidProvider.bids.isNotEmpty) {
-            highestBid = bidProvider.bids.map((bid) => bid.importo).reduce((a, b) => a > b ? a : b);
+            // Trova l'offerta più alta
+            if (bidProvider.bids.isNotEmpty) {
+              highestBid = bidProvider.bids.map((bid) => bid.importo).reduce((a, b) => a > b ? a : b);
+            }
           }
 
           setState(() {
@@ -186,20 +186,39 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                 ],
               ),
               const SizedBox(height: 20.0),
-              // Categoria del prodotto
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 6.0),
-                decoration: BoxDecoration(
-                  color: Colors.blue,
-                  borderRadius: BorderRadius.circular(12.0),
-                ),
-                child: Text(
-                  auction?.categoryName ?? 'N/A',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 14.0,
+              // Categoria del prodotto e Tipo di Asta
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 6.0),
+                    decoration: BoxDecoration(
+                      color: Colors.blue,
+                      borderRadius: BorderRadius.circular(12.0),
+                    ),
+                    child: Text(
+                      auction?.categoryName ?? 'N/A',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 14.0,
+                      ),
+                    ),
                   ),
-                ),
+                  const SizedBox(width: 8.0), // Spazio tra i badge
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 6.0),
+                    decoration: BoxDecoration(
+                      color: Colors.blueGrey,
+                      borderRadius: BorderRadius.circular(12.0),
+                    ),
+                    child: Text(
+                      toBeginningOfSentenceCase(auction?.tipo ?? 'Tipo N/A')!, // Tipo di asta
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 14.0,
+                      ),
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: 14.0),
               // Nome e descrizione del prodotto
@@ -222,16 +241,28 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: <Widget>[
-                  Text(
-                    highestBid != null && highestBid! > auction!.prezzoIniziale
-                        ? 'Offerta più alta: ${highestBid!.toStringAsFixed(2)}€'
-                        : 'Offerta attuale: ${auction!.prezzoIniziale.toStringAsFixed(2)}€',
-                    style: TextStyle(
-                      fontSize: 18.0,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.green[700],
+                  // Se l'asta non è silenziosa, mostra il prezzo attuale aggiornato
+                  if (auction!.tipo != 'silenziosa')
+                    Text(
+                      highestBid != null && highestBid! > auction!.prezzoIniziale
+                          ? 'Offerta più alta: ${highestBid!.toStringAsFixed(2)}€'
+                          : 'Offerta attuale: ${auction!.prezzoIniziale.toStringAsFixed(2)}€',
+                      style: TextStyle(
+                        fontSize: 18.0,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.green[700], // Colore verde per l'offerta
+                      ),
+                    )
+                  // Se l'asta è silenziosa, mostra sempre il prezzo iniziale
+                  else
+                    Text(
+                      'Offerta attuale: ${auction!.prezzoIniziale.toStringAsFixed(2)}€',
+                      style: TextStyle(
+                        fontSize: 18.0,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.green[700], // Colore verde per l'offerta
+                      ),
                     ),
-                  ),
                   IconButton(
                     icon: Icon(
                       _isFavorite ? Icons.favorite : Icons.favorite_border,
@@ -312,7 +343,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                       ? NetworkImage(seller.avatar!)
                       : const AssetImage('images/user_avatar.png') as ImageProvider,
                 ),
-                title: Text(seller.nome ?? 'Nome del Venditore'),
+                title: Text(seller.nome),
                 subtitle: const Text('Visualizza profilo'),
                 onTap: () {
                   Navigator.push(

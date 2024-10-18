@@ -16,7 +16,11 @@ const Bid = sequelize.define('Bid', {
     },
     auction_id: {
         type: DataTypes.INTEGER,
-        allowNull: false
+        allowNull: false,
+        references: {
+            model: 'auctions',
+            key: 'id'
+        }
     }
 }, {
     timestamps: false,

@@ -17,11 +17,13 @@ class Bid {
 
   factory Bid.fromJson(Map<String, dynamic> json) {
     return Bid(
-      id: json['id'],
-      prodottoId: json['prodotto_id'],
-      utenteId: json['utente_id'],
+      id: json['id'] ?? 0, // Gestisci id null
+      prodottoId: json['prodotto_id'] ?? 0, // Gestisci prodottoId null
+      utenteId: json['utente_id'] ?? 0, // Gestisci utenteId null
       importo: json['importo'] is String ? double.tryParse(json['importo']) ?? 0.0 : json['importo'].toDouble(),
-      auction: json['auction'] != null ? Auction.fromJson(json['auction']) : null,
+      auction: json.containsKey('Auction') && json['Auction'] != null
+          ? Auction.fromJson(json['Auction'])
+          : null,
     );
   }
 

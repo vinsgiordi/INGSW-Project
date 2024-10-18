@@ -13,7 +13,7 @@ const Product = sequelize.define('Product', {
     categoria_id: {
         type: DataTypes.INTEGER,
         references: {
-            model: 'Categories',
+            model: 'categories',
             key: 'id'
         },
         allowNull: true
@@ -29,7 +29,7 @@ const Product = sequelize.define('Product', {
     venditore_id: {
         type: DataTypes.INTEGER,
         references: {
-            model: 'Users', // Assicurati che sia il nome del modello corretto
+            model: 'users', // Assicurati che sia il nome del modello corretto
             key: 'id'
         },
         allowNull: false

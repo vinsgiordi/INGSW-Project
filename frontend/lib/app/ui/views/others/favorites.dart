@@ -119,8 +119,8 @@ class _FavoritesPageState extends State<FavoritesPage> {
                     child: ListTile(
                       leading: ClipRRect(
                         borderRadius: BorderRadius.circular(8.0),
-                        child: Image.network(
-                          auction.productImage ?? 'https://via.placeholder.com/150',
+                        child: Image.asset(
+                          auction.productImage ?? 'images/150.png',
                           width: 60,
                           height: 60,
                           fit: BoxFit.cover,

@@ -9,12 +9,11 @@ import '../ui/views/welcome.dart';
 import '../ui/views/others/search.dart';
 import '../ui/views/account/buyer/orders.dart';
 import '../ui/views/account/buyer/my_bids.dart';
-import '../ui/views/account/seller/choose_auction_type.dart';
-import '../ui/views/account/seller/fixed_time_auction.dart';
-import '../ui/views/account/seller/english_auction.dart';
-import '../ui/views/account/seller/reverse_auction.dart';
-import '../ui/views/account/seller/silent_auction.dart';
-import '../ui/views/account/seller/in_progess.dart';
+import '../ui/views/account/seller/auctions/choose_auction_type.dart';
+import '../ui/views/account/seller/auctions/fixed_time_auction.dart';
+import '../ui/views/account/seller/auctions/english_auction.dart';
+import '../ui/views/account/seller/auctions/reverse_auction.dart';
+import '../ui/views/account/seller/auctions/silent_auction.dart';
 import '../ui/views/account/seller/sold.dart';
 import '../ui/views/account/seller/unsold.dart';
 import '../ui/views/account/settings/addresses.dart';
@@ -30,7 +29,6 @@ class AppRoutes {
   static const String search = '/search';
   static const String orders = '/orders';
   static const String myBids = '/my_bids';
-  static const String inProgess = '/in_progess';
   static const String sold = '/sold';
   static const String unsold = '/unsold';
   static const String userProfile = '/account';
@@ -72,8 +70,6 @@ class AppRoutes {
         return MaterialPageRoute(builder: (_) => const ReverseAuctionPage());
       case silentAuction:
         return MaterialPageRoute(builder: (_) => const SilentAuctionPage());
-      case inProgess:
-          return MaterialPageRoute(builder: (_) => InProgressPage());
       case sold:
           return MaterialPageRoute(builder: (_) => SoldPage());
       case unsold:

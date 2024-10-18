@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import '../models/auction_model.dart';
 import '../requests/auction_request.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -135,10 +136,44 @@ class AuctionProvider with ChangeNotifier {
   }
 
   // Crea una nuova asta
-  Future<void> createAuction(String token, Map<String, dynamic> auctionData) async {
+  Future<void> createAuction(String token, Map<String, dynamic> auctionData, String? immaginePrincipale) async {
     try {
-      await AuctionRequests().createAuction(token, auctionData);
-      fetchAllAuctions(token);
+      // Stampa la data corrente del device
+      DateTime now = DateTime.now();
+      print('Data corrente del device: $now');
+
+      // Aggiungi la data di scadenza se non è stata fornita
+      if (!auctionData.containsKey('data_scadenza')) {
+        auctionData['data_scadenza'] = now.add(Duration(hours: 1)).toIso8601String();  // 1 ora da adesso
+      } else {
+        // Se la data è stata fornita, lasciala così com'è (senza conversione a UTC)
+        DateTime parsedDate = DateTime.parse(auctionData['data_scadenza']);
+        auctionData['data_scadenza'] = parsedDate.toIso8601String();
+      }
+
+      // Stampa la data di scadenza inviata al backend
+      print('Data di scadenza inviata al backend: ${auctionData['data_scadenza']}');
+
+      // Aggiungi un log per vedere i dati prima di inviarli
+      print('Dati prima dell\'invio: $auctionData, immagine: $immaginePrincipale');
+
+      // Controlla se l'immagine è null, altrimenti rimuovi il campo
+      Map<String, dynamic> newAuctionData = {
+        ...auctionData,
+        if (immaginePrincipale != null) 'immagine_principale': immaginePrincipale,
+      };
+
+      print('Dati finali inviati al backend: $newAuctionData');
+
+      // Effettua la richiesta di creazione dell'asta
+      final response = await AuctionRequests().createAuction(token, newAuctionData);
+
+      if (response.statusCode != 201) {
+        print('Errore dal server: ${response.statusCode}, ${response.body}');
+        throw Exception('Errore nella creazione dell\'asta: ${response.body}');
+      }
+
+      await fetchAllAuctions(token);
     } catch (e) {
       print('Error creating auction: $e');
     }
