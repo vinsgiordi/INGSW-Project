@@ -10,6 +10,7 @@ class AuctionProvider with ChangeNotifier {
   List<Auction> _endingSoonAuctions = [];
   List<Auction> _auctionType = [];
   List<Auction> _carouselAuctions = [];
+  List<Auction> _unsoldAuctions = [];
   bool _isLoading = false;
 
   List<Auction> get auctions => _auctions;
@@ -17,6 +18,7 @@ class AuctionProvider with ChangeNotifier {
   List<Auction> get endingSoonAuctions => _endingSoonAuctions;
   List<Auction> get auctionType => _auctionType;
   List<Auction> get carouselAuctions => _carouselAuctions;
+  List<Auction> get unsoldAuctions => _unsoldAuctions;
   bool get isLoading => _isLoading;
 
   // Recupera tutte le aste
@@ -38,6 +40,8 @@ class AuctionProvider with ChangeNotifier {
   Future<Auction?> fetchAuctionById(String token, int auctionId) async {
     try {
       final auction = await AuctionRequests().getAuctionById(token, auctionId);
+      print('Dati dell\'asta ricevuti: ${auction
+          .toJson()}'); // Verifica la risposta completa
       return auction;
     } catch (e) {
       print('Errore nel recupero dell\'asta: $e');
@@ -176,6 +180,60 @@ class AuctionProvider with ChangeNotifier {
       await fetchAllAuctions(token);
     } catch (e) {
       print('Error creating auction: $e');
+    }
+  }
+
+  // Recupera tutte le aste vendute dall'utente
+  Future<void> fetchSoldAuctions(String token) async {
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      _auctions = await AuctionRequests().getSoldAuctions(token); // Usa la nuova API
+      print('Aste vendute caricate: $_auctions');
+    } catch (e) {
+      print('Errore nel caricamento delle aste vendute: $e');
+    }
+
+    _isLoading = false;
+    notifyListeners();
+  }
+
+// Recupera tutte le aste non vendute
+  Future<void> fetchUnsoldAuctions(String token) async {
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      _unsoldAuctions = await AuctionRequests().getUnsoldAuctions(token); // Chiama il metodo corretto
+      print('Aste non vendute caricate: $_unsoldAuctions');
+    } catch (e) {
+      print('Errore nel caricamento delle aste non vendute: $e');
+    }
+
+    _isLoading = false;
+    notifyListeners();
+  }
+
+  // Accetta un'offerta per un'asta silenziosa
+  Future<void> acceptBidForSilentAuction(String token, int auctionId, int bidId) async {
+    try {
+      await AuctionRequests().acceptBidForSilentAuction(token, auctionId, bidId);
+      // Aggiorna le aste dopo l'operazione
+      await fetchAllAuctions(token);
+    } catch (e) {
+      print('Errore nell\'accettazione dell\'offerta: $e');
+    }
+  }
+
+  // Rifiuta tutte le offerte per un'asta silenziosa
+  Future<void> rejectAllBidsForSilentAuction(String token, int auctionId) async {
+    try {
+      await AuctionRequests().rejectAllBidsForSilentAuction(token, auctionId);
+      // Aggiorna le aste dopo l'operazione
+      await fetchAllAuctions(token);
+    } catch (e) {
+      print('Errore nel rifiuto delle offerte: $e');
     }
   }
 

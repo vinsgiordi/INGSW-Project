@@ -6,6 +6,8 @@ class Bid {
   final int utenteId;
   final double importo;
   final Auction? auction;
+  final String? utenteNome;
+  final String? utenteCognome;
 
   Bid({
     required this.id,
@@ -13,6 +15,8 @@ class Bid {
     required this.utenteId,
     required this.importo,
     this.auction,
+    this.utenteNome,
+    this.utenteCognome,
   });
 
   factory Bid.fromJson(Map<String, dynamic> json) {
@@ -24,6 +28,8 @@ class Bid {
       auction: json.containsKey('Auction') && json['Auction'] != null
           ? Auction.fromJson(json['Auction'])
           : null,
+      utenteNome: json['User'] != null ? json['User']['nome'] : null, // Prendi il nome dall'oggetto User
+      utenteCognome: json['User'] != null ? json['User']['cognome'] : null, // Prendi il cognome dall'oggetto User
     );
   }
 
@@ -34,6 +40,8 @@ class Bid {
       'utente_id': utenteId,
       'importo': importo,
       'auction': auction?.toJson(),
+      'utenteNome': utenteNome,
+      'utenteCognome': utenteCognome,
     };
   }
 }

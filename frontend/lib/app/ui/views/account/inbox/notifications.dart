@@ -1,4 +1,3 @@
-// ui/views/account/inbox/notifications.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -19,7 +18,6 @@ class _NotificationsPageState extends State<NotificationsPage> {
     _loadTokenAndFetchNotifications();
   }
 
-  // Funzione per caricare il token e recuperare le notifiche
   Future<void> _loadTokenAndFetchNotifications() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     _token = prefs.getString('accessToken');
@@ -28,8 +26,17 @@ class _NotificationsPageState extends State<NotificationsPage> {
       final notificationProvider = Provider.of<NotificationProvider>(context, listen: false);
       await notificationProvider.fetchNotificationsByUser(_token!);
     } else {
-      // Se non c'è il token, reindirizza l'utente alla pagina di login
-      Navigator.pushReplacementNamed(context, '/login'); // Rotta per il login
+      Navigator.pushReplacementNamed(context, '/login');
+    }
+  }
+
+  void _deleteNotification(int id) async {
+    if (_token != null) {
+      final notificationProvider = Provider.of<NotificationProvider>(context, listen: false);
+      await notificationProvider.deleteNotification(_token!, id);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Notifica eliminata.')),
+      );
     }
   }
 
@@ -50,34 +57,47 @@ class _NotificationsPageState extends State<NotificationsPage> {
           }
 
           return Padding(
-            padding: const EdgeInsets.all(16.0), // Aggiungi padding per lo spazio tra i bordi
+            padding: const EdgeInsets.all(16.0),
             child: ListView.builder(
               itemCount: notificationProvider.notifications.length,
               itemBuilder: (context, index) {
                 final notification = notificationProvider.notifications[index];
+
                 return Card(
-                  color: notification.letto ? Colors.white : Colors.grey[200], // Cambia colore di background per non lette
+                  color: notification.isRead ? Colors.white : Colors.grey[200],
                   child: ListTile(
-                    title: Text(notification.messaggio),
-                    trailing: notification.letto
-                        ? const Icon(Icons.check, color: Colors.green)
-                        : IconButton(
-                      icon: const Icon(Icons.mark_email_read, color: Colors.blue),
-                      onPressed: () {
-                        notificationProvider.markAsRead(_token!, notification.id);
-                      },
+                    title: Text(notification.message),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.delete, color: Colors.red),
+                          onPressed: () {
+                            _deleteNotification(notification.id); // Cancella notifica individuale
+                          },
+                        ),
+                        if (!notification.isRead)
+                          IconButton(
+                            icon: const Icon(Icons.mark_email_read, color: Colors.blue),
+                            onPressed: () {
+                              notificationProvider.markAsRead(_token!, notification.id);
+                            },
+                          ),
+                      ],
                     ),
                     onTap: () {
-                      // Naviga al componente NotificationDetailPage quando si clicca su una notifica
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => NotificationDetailPage(notification: notification),
-                        ),
-                      );
-                    },
-                    onLongPress: () {
-                      notificationProvider.deleteNotification(_token!, notification.id);
+                      if (notification.isInteractive) {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => NotificationDetailPage(
+                              notification: notification,
+                              auctionId: notification.auctionId ?? 0,
+                              bidId: notification.bidId ?? 0,
+                            ),
+                          ),
+                        );
+                      }
                     },
                   ),
                 );

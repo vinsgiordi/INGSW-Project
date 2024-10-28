@@ -6,6 +6,7 @@ class NotificationProvider with ChangeNotifier {
   List<NotificationModel> _notifications = [];
   bool _isLoading = false;
 
+
   List<NotificationModel> get notifications => _notifications;
   bool get isLoading => _isLoading;
 

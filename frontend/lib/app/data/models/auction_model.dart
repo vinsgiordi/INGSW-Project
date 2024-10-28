@@ -1,3 +1,5 @@
+import 'bid_model.dart';
+
 class Auction {
   final int id;
   final int prodottoId;
@@ -16,6 +18,7 @@ class Auction {
   final String? productDescription;
   final String? productImage;
   String? categoryName;
+  final List<Bid>? bids;
 
   Auction({
     required this.id,
@@ -34,9 +37,11 @@ class Auction {
     this.productDescription,
     this.productImage,
     this.categoryName,
+    this.bids,
   });
 
   factory Auction.fromJson(Map<String, dynamic> json) {
+    print('Dati JSON ricevuti: $json'); // Log dei dati JSON
     return Auction(
       id: json['id'] ?? 0,
       prodottoId: json['prodotto_id'] ?? 0,
@@ -49,16 +54,15 @@ class Auction {
       immaginePrincipale: json['immagine_principale'],
       stato: json['stato'] ?? '',
       venditoreId: json['venditore_id'] ?? 0,
-      sellerName: json['Product'] != null && json['Product']['venditore'] != null
-          ? "${json['Product']['venditore']['nome']} ${json['Product']['venditore']['cognome']}"
-          : null,      productName: json['Product'] != null ? json['Product']['nome'] : null,
+      sellerName: json['venditore'] != null ? "${json['venditore']['nome']} ${json['venditore']['cognome']}" : null,
+      productName: json['Product'] != null ? json['Product']['nome'] : null,
       productDescription: json['Product'] != null ? json['Product']['descrizione'] : null,
       productImage: json['Product'] != null ? json['Product']['immagine_principale'] : null,
-      categoryName: json['Product'] != null && json['Product']['Category'] != null
-          ? json['Product']['Category']['nome']
-          : 'N/A', // Nome della categoria
+      categoryName: json['Product'] != null && json['Product']['Category'] != null ? json['Product']['Category']['nome'] : 'N/A',
+      bids: json['Bids'] != null ? List<Bid>.from(json['Bids'].map((bidJson) => Bid.fromJson(bidJson))) : [],
     );
   }
+
 
   Map<String, dynamic> toJson() {
     return {
@@ -79,6 +83,7 @@ class Auction {
       'productDescription': productDescription,
       'productImage': productImage,
       'categoryName': categoryName,
+      'Bids': bids != null ? bids!.map((bid) => bid.toJson()).toList() : [],
     };
   }
 }
