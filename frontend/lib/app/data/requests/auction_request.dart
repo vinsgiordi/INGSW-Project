@@ -24,7 +24,6 @@ class AuctionRequests {
     return response;  // Torna l'intera risposta per ulteriori controlli
   }
 
-
   // Recupera tutte le aste
   Future<List<Auction>> getAllAuctions(String token) async {
     final response = await http.get(
@@ -132,6 +131,73 @@ class AuctionRequests {
       throw Exception('Failed to load auctions by type');
     }
   }
+
+  // Recupera tutte le aste vendute
+  Future<List<Auction>> getSoldAuctions(String token) async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/api/auctions/completed'), // L'endpoint per le aste completate
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      List<dynamic> data = jsonDecode(response.body);
+      return data.map((auction) => Auction.fromJson(auction)).toList();
+    } else {
+      throw Exception('Failed to load sold auctions');
+    }
+  }
+
+  // Recupera tutte le aste non vendute
+  Future<List<Auction>> getUnsoldAuctions(String token) async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/api/auctions/unsold'),
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      List<dynamic> data = jsonDecode(response.body);
+      return data.map((auction) => Auction.fromJson(auction)).toList();
+    } else {
+      throw Exception('Errore nel caricamento delle aste non vendute');
+    }
+  }
+
+  // Accetta un'offerta per un'asta silenziosa
+  Future<void> acceptBidForSilentAuction(String token, int auctionId, int bidId) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/api/auctions/silent-auction/$auctionId/accept-bid/$bidId'),
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Errore nell\'accettazione dell\'offerta');
+    }
+  }
+
+// Rifiuta tutte le offerte per un'asta silenziosa
+  Future<void> rejectAllBidsForSilentAuction(String token, int auctionId) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/api/auctions/silent-auction/$auctionId/reject-all-bids'),
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Errore nel rifiuto delle offerte');
+    }
+  }
+
 
   // Aggiorna un'asta
   Future<void> updateAuction(String token, int id, Map<String, dynamic> auctionData) async {

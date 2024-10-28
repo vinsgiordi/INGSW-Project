@@ -1,35 +1,42 @@
 class NotificationModel {
   final int id;
-  final int utenteId;
-  final String messaggio;
-  final bool letto;
-  final DateTime createdAt;
+  final int userId;
+  final String message;
+  final bool isRead;
+  final int? auctionId;
+  final int? bidId;
+  final bool isInteractive;
 
   NotificationModel({
     required this.id,
-    required this.utenteId,
-    required this.messaggio,
-    required this.letto,
-    required this.createdAt,
+    required this.userId,
+    required this.message,
+    required this.isRead,
+    this.auctionId,
+    this.bidId,
+    this.isInteractive = false,
   });
 
   factory NotificationModel.fromJson(Map<String, dynamic> json) {
     return NotificationModel(
       id: json['id'],
-      utenteId: json['utente_id'],
-      messaggio: json['messaggio'],
-      letto: json['letto'],
-      createdAt: DateTime.parse(json['created_at']),
+      userId: json['utente_id'],
+      message: json['messaggio'],
+      isRead: json['letto'] ?? false,
+      auctionId: json['auction_id'],
+      bidId: json['bid_id'],
+      isInteractive: json['auction_id'] != null, // True se l'asta è associata
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'utente_id': utenteId,
-      'messaggio': messaggio,
-      'letto': letto,
-      'created_at': createdAt.toIso8601String(),
+      'utente_id': userId,
+      'messaggio': message,
+      'letto': isRead,
+      'auction_id': auctionId,
+      'bid_id': bidId,
     };
   }
 }

@@ -89,7 +89,6 @@ const createAuction = async (req, res) => {
     }
 };
 
-
 // Recupera tutte le aste
 const getAllAuctions = async (req, res) => {
     try {
@@ -288,6 +287,124 @@ const getAuctionsByEndingSoon = async (req, res) => {
     }
 };
 
+// Recupera l'asta con lo stato completato
+const getAuctionCompleted = async (req, res) => {
+    try {
+        const auctions = await Auction.findAll({
+            where: {
+                venditore_id: req.user.id, // Venditore corrisponde all'utente autenticato
+                stato: 'completata' // Stato completata
+            },
+            include: [
+                {
+                    model: Product,   // Collega il modello Product
+                    attributes: ['id', 'nome', 'descrizione', 'prezzo_iniziale', 'immagine_principale']
+                },
+                {
+                    model: Bid,   // Include il modello Bid per ottenere l'offerta vincente
+                    attributes: ['id', 'importo', 'utente_id'],
+                    include: [{
+                        model: User,  // Collega l'utente che ha vinto l'asta
+                        attributes: ['nome', 'cognome']
+                    }]
+                }
+            ]
+        });
+
+        res.status(200).json(auctions);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+// Recupera l'asta che non è stata venduta
+const getUnsoldAuctions = async (req, res) => {
+    try {
+      const unsoldAuctions = await Auction.findAll({
+        where: {
+          venditore_id: req.user.id, // Filtra solo le aste dell'utente autenticato
+          stato: 'fallita'
+        },
+        include: [
+          {
+            model: Product,
+            attributes: ['id', 'nome', 'descrizione', 'prezzo_iniziale', 'immagine_principale']
+          },
+          {
+            model: Bid,  // Include le offerte per vedere se ci sono state offerte
+            attributes: ['id', 'importo', 'utente_id'],
+          }
+        ],
+      });
+
+      // Aggiungi un campo per specificare il motivo della mancata vendita
+      const unsoldWithReasons = unsoldAuctions.map((auction) => {
+        let reason;
+        if (auction.Bids.length === 0) {
+          reason = 'Nessuna offerta ricevuta';
+        } else if (auction.prezzo_minimo && auction.Bids[0].importo < auction.prezzo_minimo) {
+          reason = 'Prezzo minimo non raggiunto';
+        }
+        return {
+          ...auction.toJSON(),
+          reason: reason,
+        };
+      });
+
+      res.status(200).json(unsoldWithReasons);
+    } catch (error) {
+      res.status(500).json({ error: 'Errore nel recupero delle aste non vendute.' });
+    }
+};
+
+// Accetta l'offerta per un'asta silenziosa specifica
+const acceptBidForSilentAuction = async (req, res) => {
+    const { auctionId, bidId } = req.params;
+
+    try {
+        const auction = await Auction.findByPk(auctionId, { include: [Product] });
+
+        if (!auction || auction.tipo !== 'silenziosa' || auction.stato !== 'attiva') {
+            return res.status(400).json({ error: 'Asta non trovata o già completata/fallita.' });
+        }
+
+        // Chiama il servizio per accettare l'offerta
+        const result = await auctionService.acceptSilentAuctionBid(auction, bidId);
+
+        // Imposta lo stato a completata
+        auction.stato = 'completata';
+        await auction.save();
+
+        res.status(200).json(result);
+    } catch (error) {
+        res.status(500).json({ error: 'Errore nell\'accettazione dell\'offerta per l\'asta silenziosa.' });
+    }
+};
+
+// Rifiuta tutte le offerte per un'asta silenziosa specifica
+const rejectAllBidsForSilentAuction = async (req, res) => {
+    const { auctionId } = req.params;
+
+    try {
+        const auction = await Auction.findByPk(auctionId, { include: [Product] });
+
+        if (!auction || auction.tipo !== 'silenziosa' || auction.stato !== 'attiva') {
+            return res.status(400).json({ error: 'Asta non trovata o già completata/fallita.' });
+        }
+
+        // Chiama il servizio per rifiutare tutte le offerte
+        const result = await auctionService.rejectAllBidsForSilentAuction(auction);
+
+        // Imposta lo stato a fallita
+        auction.stato = 'fallita';
+        await auction.save();
+
+        res.status(200).json(result);
+    } catch (error) {
+        res.status(500).json({ error: 'Errore nel rifiuto delle offerte per l\'asta silenziosa.' });
+    }
+};
+
 // Aggiorna un'asta per ID
 const updateAuction = async (req, res) => {
     const { prodotto_id, tipo, data_scadenza, prezzo_minimo, incremento_rialzo, decremento_prezzo, prezzo_iniziale, stato } = req.body;
@@ -373,6 +490,10 @@ module.exports = {
     getAllActiveAuctions,
     getAuctionsByEndingSoon,
     getAuctionsByType,
+    getAuctionCompleted,
+    getUnsoldAuctions,
+    acceptBidForSilentAuction,
+    rejectAllBidsForSilentAuction,
     updateAuction,
     handleAuctionCompletion,
     deleteAuction

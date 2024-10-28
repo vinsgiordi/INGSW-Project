@@ -7,6 +7,10 @@ const authMiddleware = require('../middleware/auth');
 router.post('/create', authMiddleware, auctionController.createAuction); // Crea una nuova asta
 router.get('/ending-soon', authMiddleware, auctionController.getAuctionsByEndingSoon); // Recupera tutte le aste che terminano entro una certa data
 router.get('/active', authMiddleware, auctionController.getAllActiveAuctions); // Recupera tutte le aste con stato attivo
+router.get('/completed', authMiddleware, auctionController.getAuctionCompleted); // Recupera tutte le aste con stato completato
+router.get('/unsold', authMiddleware, auctionController.getUnsoldAuctions); // Recupera tutte le aste che non sono state vendute
+router.post('/silent-auction/:auctionId/accept-bid/:bidId', authMiddleware, auctionController.acceptBidForSilentAuction); // Per accettare le offerte per le aste silenziose
+router.post('/silent-auction/:auctionId/reject-all-bids', authMiddleware, auctionController.rejectAllBidsForSilentAuction); // Per rifiutare le offerte per le aste silenziose
 router.get('/by-type', authMiddleware, auctionController.getAuctionsByType); // Recupera tutte le aste per il singolo tipo
 router.get('/category/:categoryId', authMiddleware, auctionController.getAuctionsByCategory); // Recupera le aste per una determinata categoria
 router.get('/:id', authMiddleware, auctionController.getAuctionById); // Recupera una singola asta per ID

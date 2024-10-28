@@ -14,7 +14,7 @@ class AccountPage extends StatelessWidget {
 
     return Scaffold(
       body: FutureBuilder(
-        future: _checkToken(context),
+        future: _checkTokenAndLoadNotifications(context),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
@@ -107,7 +107,7 @@ class AccountPage extends StatelessWidget {
               Consumer<NotificationProvider>(
                 builder: (context, notificationProvider, child) {
                   final int unreadCount = notificationProvider.notifications
-                      .where((notification) => !notification.letto)
+                      .where((notification) => !notification.isRead)
                       .length;
 
                   return ListTile(
@@ -186,12 +186,17 @@ class AccountPage extends StatelessWidget {
     );
   }
 
-  Future<bool> _checkToken(BuildContext context) async {
+  // Funzione che carica il token e recupera le notifiche
+  Future<bool> _checkTokenAndLoadNotifications(BuildContext context) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? token = prefs.getString('accessToken');
     if (token == null) {
       return false;
     }
+
+    // Recupera le notifiche usando NotificationProvider
+    final notificationProvider = Provider.of<NotificationProvider>(context, listen: false);
+    await notificationProvider.fetchNotificationsByUser(token);
     return true;
   }
 }

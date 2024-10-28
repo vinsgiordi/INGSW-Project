@@ -22,9 +22,9 @@ class WelcomePage extends StatelessWidget {
                   SizedBox(width: 10), // Spazio tra logo e testo
                 ],
               ),
-              const SizedBox(height: 50),
+              const SizedBox(height: 40),
               Text(
-                'Benvenuto in BidHub',
+                'Benvenuto in DietiDeals24',
                 style: TextStyle(
                   fontSize: 40,
                   fontWeight: FontWeight.bold,

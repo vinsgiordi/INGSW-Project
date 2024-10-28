@@ -57,7 +57,6 @@ app.post('/auth/refresh-token', (req, res) => {
   });
 });
 
-
 const cors = require('cors');
 app.use(cors({
   origin: '*', // Per sviluppo locale, puoi specificare il dominio del frontend in produzione

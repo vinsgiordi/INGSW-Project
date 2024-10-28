@@ -34,8 +34,9 @@ const Auction = sequelize.define('Auction', {
         allowNull: false
     },
     stato: {
-        type: DataTypes.STRING,
-        allowNull: false
+        type: DataTypes.ENUM('attiva', 'completata', 'fallita'),
+        allowNull: false,
+        defaultValue: 'attiva'
     },
     venditore_id: {
         type: DataTypes.INTEGER,
