@@ -17,11 +17,26 @@ const Notification = sequelize.define('Notification', {
     letto: {
         type: DataTypes.BOOLEAN,
         defaultValue: false
+    },
+    auction_id: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        references: {
+            model: 'auctions',
+            key: 'id'
+        }
+    },
+    bid_id: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        references: {
+            model: 'bids',
+            key: 'id'
+        }
     }
 }, {
     timestamps: true,
     createdAt: 'created_at',
-    updatedAt: false,
     tableName: 'notifications'
 });
 
