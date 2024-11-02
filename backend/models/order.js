@@ -15,9 +15,9 @@ const Order = sequelize.define('Order', {
         allowNull: false
     },
     stato: {
-        type: DataTypes.STRING,
+        type: DataTypes.ENUM('in elaborazione', 'pagato', 'spedito', 'completato'),
         allowNull: false,
-        defaultValue: 'in elaborazione' // Stato iniziale
+        defaultValue: 'in elaborazione'
     },
     indirizzo_spedizione: {
         type: DataTypes.TEXT,
@@ -30,6 +30,14 @@ const Order = sequelize.define('Order', {
     importo_totale: {
         type: DataTypes.DECIMAL(10, 2),
         allowNull: false
+    },
+    auction_id: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: {
+            model: 'auctions',
+            key: 'id'
+        }
     }
 }, {
     timestamps: true,

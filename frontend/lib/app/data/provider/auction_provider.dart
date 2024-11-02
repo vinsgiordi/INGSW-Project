@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import '../models/auction_model.dart';
 import '../requests/auction_request.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class AuctionProvider with ChangeNotifier {
   List<Auction> _auctions = [];
@@ -11,6 +9,7 @@ class AuctionProvider with ChangeNotifier {
   List<Auction> _auctionType = [];
   List<Auction> _carouselAuctions = [];
   List<Auction> _unsoldAuctions = [];
+  bool _isUserSeller = false;
   bool _isLoading = false;
 
   List<Auction> get auctions => _auctions;
@@ -19,6 +18,7 @@ class AuctionProvider with ChangeNotifier {
   List<Auction> get auctionType => _auctionType;
   List<Auction> get carouselAuctions => _carouselAuctions;
   List<Auction> get unsoldAuctions => _unsoldAuctions;
+  bool get IsUserSeller => _isUserSeller;
   bool get isLoading => _isLoading;
 
   // Recupera tutte le aste
@@ -256,4 +256,17 @@ class AuctionProvider with ChangeNotifier {
       print('Error deleting auction: $e');
     }
   }
+
+  // Funzione per verificare se l'utente loggato è il venditore dell'asta
+  Future<bool> verifyUserIsSeller(String token, int auctionId) async {
+    try {
+      // Esegui la richiesta per verificare se l'utente è il venditore
+      final isSeller = await AuctionRequests().checkIfUserIsSeller(auctionId, token);
+      return isSeller; // Ritorna il risultato
+    } catch (e) {
+      print('Errore nella verifica se l\'utente è il venditore: $e');
+      return false; // In caso di errore, ritorna false
+    }
+  }
+
 }

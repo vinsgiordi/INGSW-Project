@@ -53,6 +53,23 @@ const markAsRead = async (req, res) => {
     }
 };
 
+// Eliminare tutte le notifiche contemporaneamente
+const deleteAllNotifications = async (req, res) => {
+    try {
+        const userId = req.user.id;
+
+        // Cancella tutte le notifiche dell'utente autenticato
+        await Notification.destroy({
+            where: { utente_id: userId }
+        });
+
+        res.status(StatusCodes.OK).json({ message: 'Tutte le notifiche sono state cancellate con successo' });
+    } catch (error) {
+        console.error('Errore nella cancellazione delle notifiche:', error);
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: 'Errore nel cancellare le notifiche' });
+    }
+};
+
 // Elimina una notifica
 const deleteNotification = async (req, res) => {
     try {
@@ -68,9 +85,11 @@ const deleteNotification = async (req, res) => {
     }
 };
 
+
 module.exports = {
     createNotification,
     getNotificationsByUser,
     markAsRead,
+    deleteAllNotifications,
     deleteNotification
 };

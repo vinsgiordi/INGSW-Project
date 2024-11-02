@@ -55,4 +55,18 @@ class NotificationProvider with ChangeNotifier {
       print('Error deleting notification: $e');
     }
   }
+
+  // Elimina tutte le notifiche contemporaneamente
+  // NotificationProvider
+  Future<void> deleteAllNotifications(String token) async {
+    try {
+      await NotificationRequests().deleteAllNotification(token);
+      _notifications.clear();
+      notifyListeners();  // Notifica la UI per aggiornare immediatamente
+    } catch (e) {
+      print('Errore nella cancellazione di tutte le notifiche: $e');
+    }
+  }
+
+
 }

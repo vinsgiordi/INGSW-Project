@@ -1,4 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../../../../services/storage_service.dart';
+import '../../../../data/models/order_model.dart';
+import '../../../../data/provider/order_provider.dart';
+import 'checkouts.dart';
 
 class OrdersPage extends StatefulWidget {
   @override
@@ -7,22 +12,20 @@ class OrdersPage extends StatefulWidget {
 
 class _OrdersPageState extends State<OrdersPage> with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  List<String> unpaidOrders = [];
-  List<String> paidOrders = [];
+  final StorageService _storageService = StorageService();
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
-    // Qui potresti caricare gli ordini dal backend
-    fetchOrders();
+    _fetchOrders();
   }
 
-  void fetchOrders() {
-    // Simulazione dei dati
-    unpaidOrders = ['Ordine 1', 'Ordine 2'];
-    paidOrders = ['Ordine 3'];
-    setState(() {});
+  void _fetchOrders() async {
+    final token = await _storageService.getAccessToken();
+    if (token != null) {
+      Provider.of<OrderProvider>(context, listen: false).fetchOrders(token);
+    }
   }
 
   @override
@@ -38,31 +41,62 @@ class _OrdersPageState extends State<OrdersPage> with SingleTickerProviderStateM
         title: const Text('Ordini'),
         bottom: TabBar(
           controller: _tabController,
-          indicatorColor: Colors.blue, // Colore del selettore
-          labelColor: Colors.blue, // Colore del testo selezionato
-          unselectedLabelColor: Colors.blueGrey, // Colore del testo non selezionato
+          indicatorColor: Colors.blue,
+          labelColor: Colors.blue,
+          unselectedLabelColor: Colors.blueGrey,
           tabs: const [
             Tab(text: 'Non pagato'),
             Tab(text: 'Pagato'),
           ],
         ),
       ),
-      body: TabBarView(
-        controller: _tabController,
-        children: [
-          OrdersList(orders: unpaidOrders, emptyMessage: 'Ancora nessun ordine non pagato.'),
-          OrdersList(orders: paidOrders, emptyMessage: 'Ancora nessun ordine pagato.'),
-        ],
+      body: Consumer<OrderProvider>(
+        builder: (context, orderProvider, child) {
+          final unpaidOrders = orderProvider.orders.where((order) => order.stato == 'in elaborazione').toList();
+          final paidOrders = orderProvider.orders.where((order) => order.stato == 'pagato').toList();
+
+          return TabBarView(
+            controller: _tabController,
+            children: [
+              OrdersList(
+                orders: unpaidOrders,
+                emptyMessage: 'Ancora nessun ordine non pagato.',
+                onPayPressed: (order) => _openCheckoutPage(order),
+              ),
+              OrdersList(
+                orders: paidOrders,
+                emptyMessage: 'Ancora nessun ordine pagato.',
+              ),
+            ],
+          );
+        },
       ),
     );
+  }
+
+  void _openCheckoutPage(Order order) async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => CheckoutPage(order: order)),
+    );
+
+    if (result == true) {
+      _fetchOrders(); // Refresh orders after payment
+    }
   }
 }
 
 class OrdersList extends StatelessWidget {
-  final List<String> orders;
+  final List<Order> orders;
   final String emptyMessage;
+  final Function(Order)? onPayPressed;
 
-  const OrdersList({super.key, required this.orders, required this.emptyMessage});
+  const OrdersList({
+    Key? key,
+    required this.orders,
+    required this.emptyMessage,
+    this.onPayPressed,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -71,16 +105,18 @@ class OrdersList extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Image.asset('images/donna_che_ordina.jpg'), // Aggiungi la tua immagine
             const SizedBox(height: 20),
             Text(emptyMessage),
             const SizedBox(height: 20),
             ElevatedButton(
-              onPressed: () {
-                // Logica per ricaricare gli ordini
+              onPressed: () async {
+                final orderProvider = Provider.of<OrderProvider>(context, listen: false);
+                final token = await StorageService().getAccessToken();
+                if (token != null) orderProvider.fetchOrders(token);
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blue, // Colore blu per il bottone
+                backgroundColor: Colors.blue,
+                foregroundColor: Colors.white,
               ),
               child: const Text('Ricarica'),
             ),
@@ -91,8 +127,29 @@ class OrdersList extends StatelessWidget {
       return ListView.builder(
         itemCount: orders.length,
         itemBuilder: (context, index) {
+          final order = orders[index];
+          final product = order.product;
+
           return ListTile(
-            title: Text(orders[index]),
+            title: Text(product?.nome ?? "Prodotto Sconosciuto"),
+            subtitle: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text("Descrizione: ${product?.descrizione ?? "Non disponibile"}"),
+                Text("Stato Ordine: ${order.stato}"),
+                Text("Totale: €${order.importoTotale.toStringAsFixed(2)}"),
+              ],
+            ),
+            trailing: order.stato == 'in elaborazione' && onPayPressed != null
+                ? ElevatedButton(
+              onPressed: () => onPayPressed!(order),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.green,
+                foregroundColor: Colors.white,
+              ),
+              child: const Text('Paga'),
+            )
+                : null,
           );
         },
       );

@@ -74,4 +74,21 @@ class OrderRequests {
       },
     );
   }
+
+  // Aggiorna lo stato dell'ordine a "pagato"
+  Future<http.Response> markAsPaid(String token, int id) {
+    return http.put(
+      Uri.parse('$baseUrl/api/orders/$id/pay'),
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+    ).then((response) {
+      if (response.statusCode != 200) {
+        print('Errore nel completare il pagamento: ${response.body}'); // Log in caso di errore
+      }
+      return response;
+    });
+  }
+
 }

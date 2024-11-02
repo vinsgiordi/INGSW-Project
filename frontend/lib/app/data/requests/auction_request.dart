@@ -198,7 +198,6 @@ class AuctionRequests {
     }
   }
 
-
   // Aggiorna un'asta
   Future<void> updateAuction(String token, int id, Map<String, dynamic> auctionData) async {
     final response = await http.put(
@@ -227,6 +226,25 @@ class AuctionRequests {
 
     if (response.statusCode != 200) {
       throw Exception('Failed to delete auction');
+    }
+  }
+
+  // Verifichiamo se l'utente loggato è il venditore dell'asta
+  Future<bool> checkIfUserIsSeller(int auctionId, String token) async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/api/auctions/$auctionId/isUserSeller'),
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      return data['isSeller'] as bool;
+    } else {
+      print("Errore nel controllo del venditore: ${response.statusCode}, ${response.body}");
+      throw Exception('Errore nel controllo del venditore');
     }
   }
 }

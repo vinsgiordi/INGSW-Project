@@ -17,5 +17,6 @@ router.get('/:id', authMiddleware, auctionController.getAuctionById); // Recuper
 router.get('/', authMiddleware, auctionController.getAllAuctions); // Recupera tutte le aste
 router.put('/:id', authMiddleware, auctionController.updateAuction); // Aggiorna un'asta per ID
 router.delete('/:id', authMiddleware, auctionController.deleteAuction); // Cancella un'asta per ID
+router.get('/:auctionId/isUserSeller', authMiddleware, auctionController.isUserSeller); // Per verificare se l'utente è il venditore
 
 module.exports = router;
