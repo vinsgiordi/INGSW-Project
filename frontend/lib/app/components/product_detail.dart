@@ -11,7 +11,7 @@ import 'seller_profile.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ProductDetailPage extends StatefulWidget {
-  final int auctionId; // L'ID dell'asta
+  final int auctionId;
 
   const ProductDetailPage({required this.auctionId, Key? key}) : super(key: key);
 
@@ -22,16 +22,31 @@ class ProductDetailPage extends StatefulWidget {
 class _ProductDetailPageState extends State<ProductDetailPage> {
   bool _isFavorite = false;
   final TextEditingController _offerController = TextEditingController();
-  Auction? auction; // Asta che verrà caricata
-  bool isLoading = true; // Stato di caricamento
-  bool isError = false; // Per gestire eventuali errori di caricamento
-  double? highestBid; // Variabile per l'offerta più alta
+  Auction? auction;
+  bool isLoading = true;
+  bool isError = false;
+  double? highestBid;
+  bool _isUserSeller = false;
 
   @override
   void initState() {
     super.initState();
     _loadAuctionDetails();
+    _checkIfUserIsSeller();
   }
+
+  Future<void> _checkIfUserIsSeller() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString('accessToken');
+    if (token != null) {
+      bool isSeller = await Provider.of<AuctionProvider>(context, listen: false)
+          .verifyUserIsSeller(token, widget.auctionId);
+      setState(() {
+        _isUserSeller = isSeller; // Assegna il risultato a `_isUserSeller`
+      });
+    }
+  }
+
 
   Future<void> _loadAuctionDetails() async {
     final auctionProvider = Provider.of<AuctionProvider>(context, listen: false);
@@ -44,19 +59,15 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
 
     if (token != null) {
       try {
-        // Carica l'asta
         Auction? fetchedAuction = await auctionProvider.fetchAuctionById(token, widget.auctionId);
         if (fetchedAuction != null) {
           setState(() {
             auction = fetchedAuction;
-            _isFavorite = favoritesProvider.isFavorite(auction!); // Verifica se l'asta è nei preferiti
+            _isFavorite = favoritesProvider.isFavorite(auction!);
           });
 
-          // Carica le offerte solo se l'asta non è di tipo silenzioso
           if (auction!.tipo != 'silenziosa') {
             await bidProvider.fetchBidsByProduct(token, auction!.prodottoId);
-
-            // Trova l'offerta più alta
             if (bidProvider.bids.isNotEmpty) {
               highestBid = bidProvider.bids.map((bid) => bid.importo).reduce((a, b) => a > b ? a : b);
             }
@@ -66,35 +77,35 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
             isLoading = false;
           });
 
-          // Recupera i dettagli del venditore collegato al prodotto
           if (fetchedAuction.venditoreId != 0) {
             await sellerProvider.fetchSellerDetails(token, fetchedAuction.venditoreId);
           }
         } else {
           setState(() {
-            isError = true; // Se l'asta non viene trovata
+            isError = true;
             isLoading = false;
           });
         }
       } catch (e) {
         print('Errore nel caricamento dell\'asta: $e');
         setState(() {
-          isError = true; // Gestione degli errori
+          isError = true;
           isLoading = false;
         });
       }
     } else {
-      print('Token non disponibile'); // Debug
+      print('Token non disponibile');
       setState(() {
         isError = true;
         isLoading = false;
       });
     }
+    print('venditoreId: ${auction?.venditoreId}, stato: ${auction?.stato}');
   }
 
   Future<void> _submitBid() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? token = prefs.getString('accessToken'); // Recupera il token salvato
+    String? token = prefs.getString('accessToken');
 
     if (token == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -113,9 +124,9 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
 
     final bidProvider = Provider.of<BidProvider>(context, listen: false);
     final bidData = {
-      'prodotto_id': auction!.prodottoId,  // ID del prodotto
-      'auction_id': widget.auctionId,      // ID dell'asta
-      'importo': bidAmount,                // Importo dell'offerta
+      'prodotto_id': auction!.prodottoId,
+      'auction_id': widget.auctionId,
+      'importo': bidAmount,
     };
 
     try {
@@ -123,9 +134,8 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Offerta inviata con successo!')),
       );
-      _offerController.clear();  // Pulisce il campo offerta
+      _offerController.clear();
 
-      // Ricarica i dettagli dell'asta e delle offerte
       await _loadAuctionDetails();
     } catch (error) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -148,10 +158,21 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     }
   }
 
+  bool get _canSubmitBid {
+    if (auction == null) return false;
+    final isAuctionExpired = DateTime.now().isAfter(auction!.dataScadenza);
+    final isAuctionCompleted = auction!.stato == 'completata';
+
+    final canBid = !isAuctionExpired && !_isUserSeller && !isAuctionCompleted;
+    print(
+        'Condizioni per fare offerta: isAuctionExpired=$isAuctionExpired, isUserSeller=$_isUserSeller, isAuctionCompleted=$isAuctionCompleted, canBid=$canBid');
+    return canBid;
+  }
+
   @override
   Widget build(BuildContext context) {
     final sellerProvider = Provider.of<SellerProvider>(context);
-    final seller = sellerProvider.seller; // Recupera il venditore dal provider
+    final seller = sellerProvider.seller;
 
     return Scaffold(
       appBar: AppBar(
@@ -169,15 +190,12 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              // Immagine principale del prodotto
               Stack(
                 children: [
                   ClipRRect(
                     borderRadius: BorderRadius.circular(10.0),
                     child: Image.asset(
-                      auction?.productImage != null
-                          ? auction!.productImage!
-                          : 'images/300.png', // Immagine di fallback
+                      auction?.productImage ?? 'images/300.png',
                       height: 250.0,
                       width: double.infinity,
                       fit: BoxFit.cover,
@@ -186,7 +204,6 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                 ],
               ),
               const SizedBox(height: 20.0),
-              // Categoria del prodotto e Tipo di Asta
               Row(
                 children: [
                   Container(
@@ -203,7 +220,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                       ),
                     ),
                   ),
-                  const SizedBox(width: 8.0), // Spazio tra i badge
+                  const SizedBox(width: 8.0),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 6.0),
                     decoration: BoxDecoration(
@@ -211,7 +228,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                       borderRadius: BorderRadius.circular(12.0),
                     ),
                     child: Text(
-                      toBeginningOfSentenceCase(auction?.tipo ?? 'Tipo N/A')!, // Tipo di asta
+                      toBeginningOfSentenceCase(auction?.tipo ?? 'Tipo N/A')!,
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 14.0,
@@ -221,7 +238,6 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                 ],
               ),
               const SizedBox(height: 14.0),
-              // Nome e descrizione del prodotto
               Text(
                 auction?.productName ?? 'Nome del prodotto',
                 style: const TextStyle(
@@ -237,11 +253,9 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                 ),
               ),
               const SizedBox(height: 16.0),
-              // Offerta attuale e tempo rimanente
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: <Widget>[
-                  // Se l'asta non è silenziosa, mostra il prezzo attuale aggiornato
                   if (auction!.tipo != 'silenziosa')
                     Text(
                       highestBid != null && highestBid! > auction!.prezzoIniziale
@@ -250,17 +264,16 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                       style: TextStyle(
                         fontSize: 18.0,
                         fontWeight: FontWeight.bold,
-                        color: Colors.green[700], // Colore verde per l'offerta
+                        color: Colors.green[700],
                       ),
                     )
-                  // Se l'asta è silenziosa, mostra sempre il prezzo iniziale
                   else
                     Text(
                       'Offerta attuale: ${auction!.prezzoIniziale.toStringAsFixed(2)}€',
                       style: TextStyle(
                         fontSize: 18.0,
                         fontWeight: FontWeight.bold,
-                        color: Colors.green[700], // Colore verde per l'offerta
+                        color: Colors.green[700],
                       ),
                     ),
                   IconButton(
@@ -274,59 +287,58 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
               ),
               const SizedBox(height: 8.0),
               Text(
-                'Tempo rimanente: ${_calculateRemainingTime(auction?.dataScadenza)}',
+                _calculateRemainingTime(auction?.dataScadenza),
                 style: const TextStyle(
                   fontSize: 16.0,
                   color: Colors.red,
                 ),
               ),
               const SizedBox(height: 24.0),
-              const Text(
-                'Fai un\'offerta',
-                style: TextStyle(
-                  fontSize: 20.0,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 8.0),
-              TextField(
-                controller: _offerController,
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(
-                  filled: true,
-                  fillColor: Colors.white54,
-                  border: OutlineInputBorder(),
-                  labelText: 'Inserisci la tua offerta',
-                  prefixIcon: Icon(Icons.euro, color: Colors.black),
-                  labelStyle: TextStyle(color: Colors.black),
-                  hintStyle: TextStyle(color: Colors.blueGrey),
-                  focusedBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: Colors.black),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: Colors.blueGrey),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16.0),
-              ElevatedButton(
-                onPressed: () async {
-                  await _submitBid();
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue,
-                  padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 15),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                ),
-                child: const Text(
+              if (_canSubmitBid) ...[
+                const Text(
                   'Fai un\'offerta',
-                  style: TextStyle(color: Colors.white),
+                  style: TextStyle(
+                    fontSize: 20.0,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-              ),
+                const SizedBox(height: 8.0),
+                TextField(
+                  controller: _offerController,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(
+                    filled: true,
+                    fillColor: Colors.white54,
+                    border: OutlineInputBorder(),
+                    labelText: 'Inserisci la tua offerta',
+                    prefixIcon: Icon(Icons.euro, color: Colors.black),
+                    labelStyle: TextStyle(color: Colors.black),
+                    hintStyle: TextStyle(color: Colors.blueGrey),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.black),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.blueGrey),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16.0),
+                ElevatedButton(
+                  onPressed: _submitBid,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue,
+                    padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 15),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                  ),
+                  child: const Text(
+                    'Fai un\'offerta',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ),
+              ],
               const SizedBox(height: 24.0),
-              // Dettagli del venditore
               const Text(
                 'Venditore',
                 style: TextStyle(
@@ -405,18 +417,24 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     );
   }
 
-  // Funzione per calcolare il tempo rimanente
   String _calculateRemainingTime(DateTime? endTime) {
+    // Se l'asta è completata o la data di scadenza è passata, mostra "Asta terminata"
+    if (auction?.stato == 'completata' || (endTime != null && DateTime.now().isAfter(endTime))) {
+      return 'Tempo rimanente: Asta terminata';
+    }
+
+    // Controlla se la data di scadenza è valida
     if (endTime == null) return 'N/A';
+
     final currentTime = DateTime.now();
     final remainingDuration = endTime.difference(currentTime);
 
-    if (remainingDuration.isNegative) {
-      return 'Asta scaduta';
-    } else {
-      final hours = remainingDuration.inHours;
-      final minutes = remainingDuration.inMinutes % 60;
-      return '$hours ore e $minutes minuti rimanenti';
-    }
+    final hours = remainingDuration.inHours;
+    final minutes = remainingDuration.inMinutes % 60;
+
+    // Mostra "Tempo rimanente" se l'asta è ancora attiva
+    return 'Tempo rimanente: $hours ore e $minutes minuti';
   }
+
+
 }

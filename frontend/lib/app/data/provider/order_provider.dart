@@ -54,6 +54,26 @@ class OrderProvider with ChangeNotifier {
     }
   }
 
+  // Imposta lo stato di un ordine come "pagato"
+  Future<bool> markOrderAsPaid(String token, int id) async {
+    try {
+      final response = await OrderRequests().markAsPaid(token, id);
+      print('Response status code: ${response.statusCode}'); // Log dello status code
+      if (response.statusCode == 200) {
+        fetchOrders(token); // Aggiorna la lista ordini
+        return true; // Ritorna "true" in caso di successo
+      } else {
+        print('Error in response: ${response.body}'); // Log in caso di errore
+      }
+    } catch (e) {
+      print('Errore nel segnare l\'ordine come pagato: $e');
+    }
+    return false; // Ritorna "false" in caso di errore
+  }
+
+
+
+
   // Cancella un ordine
   Future<void> deleteOrder(String token, int id) async {
     try {

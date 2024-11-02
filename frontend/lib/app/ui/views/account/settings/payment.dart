@@ -94,7 +94,7 @@ class _PaymentsPageState extends State<PaymentsPage> {
                   const SizedBox(height: 16),
                   _buildTextField(
                     controller: _dataScadenzaController,
-                    label: 'MM/AA',
+                    label: 'MM/AAAA',
                     keyboardType: TextInputType.datetime,
                   ),
                   const SizedBox(height: 16),
@@ -145,22 +145,33 @@ class _PaymentsPageState extends State<PaymentsPage> {
   Future<void> _addPayment() async {
     if (_token != null) {
       final paymentProvider = Provider.of<PaymentProvider>(context, listen: false);
+
+      // Formattare la data di scadenza per evitare errori
+      final List<String> expiryParts = _dataScadenzaController.text.split('/');
+      if (expiryParts.length != 2) {
+        print("Errore nel formato della data di scadenza");
+        return;
+      }
+      final int month = int.parse(expiryParts[0]);
+      final int year = int.parse(expiryParts[1]) + 2000; // Assumendo che inserisca solo AA
+
       final Payment newPayment = Payment(
-        id: 0, // Il backend assegnerà un ID
-        utenteId: 0, // Gestito dal backend tramite token
-        numeroCarta: _obfuscateCardNumber(_numeroCartaController.text),  // Cripta le cifre tranne le ultime 4
+        id: 0,
+        utenteId: 0,
+        numeroCarta: _obfuscateCardNumber(_numeroCartaController.text),
         nomeIntestatario: _nomeIntestatarioController.text,
-        dataScadenza: DateTime.parse("20${_dataScadenzaController.text.substring(3, 5)}-${_dataScadenzaController.text.substring(0, 2)}-01"),
+        dataScadenza: DateTime(year, month, 1),
       );
 
       await paymentProvider.addPayment(_token!, newPayment);
+      await paymentProvider.fetchPayments(_token!); // Ricarica le carte salvate
 
-      // Svuota i campi dopo aver aggiunto la carta
       _clearFields();
     } else {
       print("Token non trovato");
     }
   }
+
 
   @override
   Widget build(BuildContext context) {

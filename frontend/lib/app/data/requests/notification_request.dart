@@ -70,4 +70,15 @@ class NotificationRequests {
       throw Exception('Failed to delete notification');
     }
   }
+
+  // Elimina tutte le notifiche contemporaneamente
+  Future<void> deleteAllNotification(String token) async {
+    final response = await http.delete(
+      Uri.parse('$baseUrl/api/notifications/delete-all'),
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+    );
+  }
 }

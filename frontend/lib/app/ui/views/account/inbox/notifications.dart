@@ -40,11 +40,32 @@ class _NotificationsPageState extends State<NotificationsPage> {
     }
   }
 
+  Future<void> _deleteAllNotifications() async {
+    if (_token != null) {
+      final notificationProvider = Provider.of<NotificationProvider>(context, listen: false);
+      await notificationProvider.deleteAllNotifications(_token!);
+      await notificationProvider.fetchNotificationsByUser(_token!);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Tutte le notifiche sono state cancellate.')),
+      );
+    }
+  }
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Notifiche'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.delete_sweep),
+            onPressed: () async {
+              await _deleteAllNotifications();
+            },
+            tooltip: 'Cancella tutte le notifiche',
+          ),
+        ],
       ),
       body: Consumer<NotificationProvider>(
         builder: (context, notificationProvider, child) {
@@ -73,7 +94,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                         IconButton(
                           icon: const Icon(Icons.delete, color: Colors.red),
                           onPressed: () {
-                            _deleteNotification(notification.id); // Cancella notifica individuale
+                            _deleteNotification(notification.id);
                           },
                         ),
                         if (!notification.isRead)

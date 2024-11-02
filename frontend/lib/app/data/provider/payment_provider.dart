@@ -26,16 +26,20 @@ class PaymentProvider with ChangeNotifier {
     notifyListeners(); // Notifica che il caricamento è terminato
   }
 
-  // Metodo per aggiungere un pagamento
+  // Metodo per aggiungere un pagamento e aggiornare la lista dal server
   Future<void> addPayment(String token, Payment payment) async {
     try {
-      final newPayment = await _paymentRequests.createPayment(token, payment); // Usa l'istanza per chiamare il metodo
-      _payments.add(newPayment); // Aggiungi il nuovo pagamento alla lista
-      notifyListeners(); // Notifica l'aggiornamento
+      final newPayment = await _paymentRequests.createPayment(token, payment);
+      _payments.add(newPayment);
+
+      // Subito dopo aver aggiunto il pagamento, aggiorna l'intera lista dei pagamenti dal server
+      await fetchPayments(token); // Ricarica i pagamenti per assicurarti che la lista sia aggiornata
+      notifyListeners();
     } catch (e) {
       print('Errore nell\'aggiunta del pagamento: $e');
     }
   }
+
 
   // Metodo per eliminare un pagamento
   Future<void> deletePayment(String token, int paymentId) async {

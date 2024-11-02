@@ -1,4 +1,5 @@
 import 'package:bid_hub/app/data/provider/bid_provider.dart';
+import 'package:bid_hub/app/data/provider/order_provider.dart';
 import 'package:bid_hub/app/data/provider/search_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -39,6 +40,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => FavoritesProvider()), // Provider per i preferiti
         ChangeNotifierProvider(create: (_) => SearchProvider()), // Provider per la ricerca
         ChangeNotifierProvider(create: (_) => SocialLoginProvider()), // Provider per il login con i social network
+        ChangeNotifierProvider(create: (_) => OrderProvider()), // Provider per gli ordini
       ],
       child: MaterialApp(
         title: 'BidHub',
