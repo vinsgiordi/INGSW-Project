@@ -1,5 +1,6 @@
 const { StatusCodes } = require('http-status-codes');
 const Payment = require('../models/payment');
+const dayjs = require('../utils/dayjs');
 
 // Crea un nuovo metodo di pagamento
 const createPayment = async (req, res) => {
@@ -14,12 +15,14 @@ const createPayment = async (req, res) => {
         const utente_id = req.user.id;
         const ultime_4_cifre = numero_carta.slice(-4);
 
+        const parsedDataScadenza = dayjs(data_scadenza, ['MM/YYYY', 'YYYY-MM']).toDate();
+
         // Salva il numero della carta criptato nel formato desiderato
         const payment = await Payment.create({
             utente_id,
             numero_carta: `**** **** **** ${ultime_4_cifre}`, // Salva solo le ultime 4 cifre
             nome_intestatario,
-            data_scadenza,
+            data_scadenza: parsedDataScadenza,
         });
 
         res.status(StatusCodes.CREATED).json(payment);

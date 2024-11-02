@@ -8,62 +8,71 @@ const dayjs = require('../utils/dayjs');
 
 // Crea una nuova offerta
 const createBid = async (req, res) => {
-    const { prodotto_id, auction_id, importo } = req.body;
+  const { prodotto_id, auction_id, importo } = req.body;
 
-    try {
-      // Verifica che tutti i campi richiesti siano presenti
+  try {
       if (!prodotto_id || !auction_id || !importo) {
-        return res.status(StatusCodes.BAD_REQUEST).json({
-          error: "Per favore inserisci tutte le informazioni richieste!"
-        });
+          return res.status(StatusCodes.BAD_REQUEST).json({
+              error: "Per favore inserisci tutte le informazioni richieste!"
+          });
+      }
+
+      // Trova l'asta per verificare i requisiti
+      const auction = await Auction.findByPk(auction_id, {
+          include: {
+              model: Product,
+              attributes: ['nome']
+          }
+      });
+
+      if (!auction || !auction.Product) {
+          return res.status(StatusCodes.NOT_FOUND).json({
+              error: "Asta o prodotto non trovati"
+          });
+      }
+
+      // Impedisce al venditore di fare offerte sulla propria asta
+      if (auction.venditore_id === req.user.id) {
+          return res.status(StatusCodes.FORBIDDEN).json({
+              error: "Non puoi fare offerte sulla tua asta."
+          });
+      }
+
+      // Verifica che l'asta non sia scaduta o completata
+      if (new Date() > new Date(auction.data_scadenza) || auction.stato === 'completata') {
+          return res.status(StatusCodes.BAD_REQUEST).json({
+              error: "L'asta è scaduta o completata. Non puoi fare un'offerta."
+          });
       }
 
       // Crea l'offerta
       const bid = await Bid.create({
-        prodotto_id,
-        auction_id,
-        utente_id: req.user.id, // Usa l'ID utente dal token JWT
-        importo
+          prodotto_id,
+          auction_id,
+          utente_id: req.user.id,
+          importo
       });
 
-      // Trova l'asta e il venditore associato
-      const auction = await Auction.findByPk(auction_id, {
-        include: {
-          model: Product,
-          attributes: ['nome']
-        }
-      });
-
-      if (!auction || !auction.Product) {
-        return res.status(StatusCodes.NOT_FOUND).json({
-          error: "Asta o prodotto non trovati"
-        });
-      }
-
-      // Se l'asta è di tipo inglese, resetta il timer
+      // Aggiorna il timer per le aste di tipo inglese
       if (auction.tipo === 'inglese') {
-        const newEndTime = dayjs().add(1, 'hour').format('YYYY-MM-DD HH:mm:ss');
-        auction.data_scadenza = newEndTime;
-        await auction.save();
-
-        console.log(`Data di scadenza aggiornata a: ${newEndTime} per l'asta ${auction.id}`);
+          const newEndTime = dayjs().add(1, 'hour').format('YYYY-MM-DD HH:mm:ss');
+          auction.data_scadenza = newEndTime;
+          await auction.save();
       }
 
       // Invia una notifica al venditore
       const venditoreId = auction.venditore_id;
       await Notification.create({
-        utente_id: venditoreId,
-        messaggio: `Hai ricevuto una nuova offerta di €${importo} per il tuo prodotto ${auction.Product.nome}.`
+          utente_id: venditoreId,
+          messaggio: `Hai ricevuto una nuova offerta di €${importo} per il tuo prodotto ${auction.Product.nome}.`
       });
 
-      // Risposta con l'offerta creata
       res.status(StatusCodes.CREATED).json(bid);
-    } catch (error) {
+  } catch (error) {
       console.error('Errore nella creazione dell\'offerta:', error);
       res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: error.message });
-    }
-  };
-
+  }
+};
 
 // Recupera tutte le offerte per un determinato prodotto
 const getBidsByProduct = async (req, res) => {
@@ -72,11 +81,11 @@ const getBidsByProduct = async (req, res) => {
             where: { prodotto_id: req.params.prodotto_id },
             include: [
                 {
-                    model: User, // Include il modello User per visualizzare le informazioni sull'utente che ha fatto l'offerta
+                    model: User,
                     attributes: ['id', 'nome', 'email']
                 },
                 {
-                    model: Auction, // Include il modello Auction per visualizzare le informazioni sull'asta
+                    model: Auction,
                     attributes: ['id', 'tipo', 'data_scadenza', 'stato']
                 }
             ]
@@ -96,8 +105,8 @@ const getBidsByUser = async (req, res) => {
                 {
                     model: Auction,
                     include: {
-                        model: Product, // Collega il modello Product per ottenere i dettagli del prodotto
-                        attributes: ['nome', 'descrizione', 'immagine_principale'] // I campi che vuoi includere
+                        model: Product,
+                        attributes: ['nome', 'descrizione', 'immagine_principale']
                     },
                     attributes: ['id', 'tipo', 'data_scadenza', 'stato']
                 }

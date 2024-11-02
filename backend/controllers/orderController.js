@@ -5,7 +5,7 @@ const User = require('../models/user');
 
 // Crea un nuovo ordine
 const createOrder = async (req, res) => {
-    const { prodotto_id, indirizzo_spedizione, metodo_pagamento, importo_totale } = req.body;
+    const { prodotto_id, auction_id, indirizzo_spedizione, metodo_pagamento, importo_totale } = req.body;
 
     try {
         // Otteniamo l'ID dell'acquirente dal token JWT
@@ -16,6 +16,7 @@ const createOrder = async (req, res) => {
 
         const order = await Order.create({
             prodotto_id,
+            auction_id,
             acquirente_id,
             venditore_id,
             indirizzo_spedizione,
@@ -30,25 +31,36 @@ const createOrder = async (req, res) => {
     }
 };
 
-// Recupera tutti gli ordini per l'utente autenticato
+// Recupera gli ordini per l'utente autenticato con stato filtrato
 const getOrdersByUser = async (req, res) => {
+    const { stato } = req.query;
+
     try {
-        const orders = await Order.findAll({
-            where: {
-                acquirente_id: req.user.id
-            },
+        const queryOptions = {
+            where: { acquirente_id: req.user.id },
             include: [
                 {
-                    model: Product, // Include il prodotto associato
-                    attributes: ['id', 'nome', 'descrizione', 'immagine_principale']
+                    model: Product,
+                    attributes: ['id', 'nome', 'descrizione', 'immagine_principale'],
                 },
                 {
-                    model: User, // Include il venditore
-                    as: 'venditore',
+                    model: User,
+                    as: 'venditore', // Usa 'venditore' come alias per la relazione con l'utente
+                    attributes: ['id', 'nome', 'email']
+                },
+                {
+                    model: User,
+                    as: 'acquirente', // Usa 'acquirente' per l'acquirente
                     attributes: ['id', 'nome', 'email']
                 }
             ]
-        });
+        };
+
+        if (stato) {
+            queryOptions.where.stato = stato;
+        }
+
+        const orders = await Order.findAll(queryOptions);
         res.status(StatusCodes.OK).json(orders);
     } catch (error) {
         res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: error.message });
@@ -136,10 +148,41 @@ async function getVenditoreId(prodotto_id) {
     }
 }
 
+// Aggiorna lo stato di un ordine a "pagato"
+const markAsPaid = async (req, res) => {
+    try {
+        console.log('ID Utente Autenticato:', req.user.id); // Log per l'utente autenticato
+        console.log('ID Ordine Richiesto:', req.params.id); // Log per l'ID dell'ordine
+
+        const order = await Order.findByPk(req.params.id);
+
+        if (!order) {
+            console.log('Ordine non trovato'); // Log ordine non trovato
+            return res.status(StatusCodes.NOT_FOUND).json({ error: 'Ordine non trovato' });
+        }
+
+        if (order.acquirente_id !== req.user.id) {
+            console.log('Utente non autorizzato'); // Log utente non autorizzato
+            return res.status(StatusCodes.FORBIDDEN).json({ error: 'Non autorizzato a modificare questo ordine' });
+        }
+
+        order.stato = 'pagato';
+        await order.save();
+
+        console.log('Stato ordine aggiornato a "pagato"'); // Log aggiornamento riuscito
+        res.status(StatusCodes.OK).json({ message: 'Ordine aggiornato a "pagato".' });
+    } catch (error) {
+        console.log('Errore interno:', error.message); // Log errore interno
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: error.message });
+    }
+};
+
+
 module.exports = {
     createOrder,
     getOrdersByUser,
     getOrderById,
     updateOrderStatus,
-    deleteOrder
+    deleteOrder,
+    markAsPaid
 };

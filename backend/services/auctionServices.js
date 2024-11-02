@@ -1,6 +1,9 @@
 const Notification = require('../models/notification');
 const Bid = require('../models/bid');
 const Auction = require('../models/auction');
+const Order = require('../models/order');
+const User = require('../models/user');
+const Payment = require('../models/payment');
 const dayjs = require('../utils/dayjs');
 
 // Logica per la gestione della scadenza delle aste a tempo fisso e all'inglese
@@ -169,9 +172,33 @@ const acceptSilentAuctionBid = async (auction, bidId) => {
             throw new Error('Offerta non trovata o non valida per questa asta.');
         }
 
+        // Recupera l'utente (acquirente) per ottenere l'indirizzo di spedizione
+        const acquirente = await User.findByPk(bid.utente_id);
+        if (!acquirente) {
+            throw new Error('Acquirente non trovato.');
+        }
+
+        const metodoPagamento = await Payment.findOne({
+            where: { utente_id: bid.utente_id }
+        });
+
         // Aggiorna lo stato dell'asta a "completata"
         auction.stato = 'completata';
         await auction.save();
+
+        // Creazione dell'ordine con indirizzo e metodo di pagamento recuperati
+        const ordine = await Order.create({
+            prodotto_id: auction.prodotto_id,
+            auction_id: auction.id,
+            acquirente_id: bid.utente_id,
+            venditore_id: auction.venditore_id,
+            indirizzo_spedizione: acquirente.indirizzo_di_spedizione,
+            metodo_pagamento: metodoPagamento ? metodoPagamento.numero_carta: "", // Lascia vuoto se il metodo non è disponibile
+            importo_totale: bid.importo,
+            stato: 'in elaborazione'
+        });
+
+        console.log("Ordine creato con successo:", ordine);
 
         // Notifica l'offerente che la sua offerta è stata accettata
         await Notification.create({
@@ -185,7 +212,7 @@ const acceptSilentAuctionBid = async (auction, bidId) => {
             messaggio: `Hai accettato l'offerta per il prodotto ${auction.Product.nome}. L'asta è stata completata.`,
         });
 
-        return { success: true, message: 'Offerta accettata con successo.' };
+        return { success: true, message: 'Offerta accettata con successo e ordine creato.' };
     } catch (error) {
         console.error(`Errore nell'accettazione dell'offerta per l'asta silenziosa: ${error}`);
         throw error;

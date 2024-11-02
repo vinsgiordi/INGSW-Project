@@ -482,6 +482,28 @@ const deleteAuction = async (req, res) => {
     }
 };
 
+// Controllo per verificare se l'utente è il venditore dell'asta
+const isUserSeller = async (req, res) => {
+    const { auctionId } = req.params;
+    const userId = req.user.id; // ID utente dal token
+
+    try {
+      const auction = await Auction.findByPk(auctionId);
+
+      if (!auction) {
+        return res.status(404).json({ error: "Asta non trovata" });
+      }
+
+      // Verifica se l'utente è il venditore
+      const isSeller = auction.venditore_id === userId;
+      res.status(200).json({ isSeller });
+    } catch (error) {
+      console.error('Errore nel controllo venditore:', error);
+      res.status(500).json({ error: 'Errore del server' });
+    }
+};
+
+
 module.exports = {
     createAuction,
     getAllAuctions,
@@ -496,5 +518,6 @@ module.exports = {
     rejectAllBidsForSilentAuction,
     updateAuction,
     handleAuctionCompletion,
-    deleteAuction
+    deleteAuction,
+    isUserSeller
 };

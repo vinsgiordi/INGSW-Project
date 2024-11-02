@@ -8,6 +8,7 @@ const Product = require('./product');
 const User = require('./user');
 const Category = require('./category');
 const Notification = require('./notification');
+const Order = require('./order');
 
 // Definizione delle associazioni
 
@@ -43,6 +44,22 @@ User.hasMany(Product, { foreignKey: 'venditore_id', onDelete: 'CASCADE' });
 User.hasMany(Notification, { foreignKey: 'utente_id', onDelete: 'CASCADE' });
 Notification.belongsTo(User, { foreignKey: 'utente_id' });
 
+// Un ordine (Order) è associato a un'asta (Auction)
+Order.belongsTo(Auction, { foreignKey: 'auction_id' });
+Auction.hasMany(Order, { foreignKey: 'auction_id' });
+
+// Un ordine (Order) è associato a un prodotto (Product)
+Order.belongsTo(Product, { foreignKey: 'prodotto_id' });
+Product.hasMany(Order, { foreignKey: 'prodotto_id' });
+
+// Un ordine (Order) è associato a un acquirente (User)
+Order.belongsTo(User, { foreignKey: 'acquirente_id', as: 'acquirente' });
+User.hasMany(Order, { foreignKey: 'acquirente_id' });
+
+// Un ordine (Order) è associato a un venditore (User)
+Order.belongsTo(User, { foreignKey: 'venditore_id', as: 'venditore' });
+User.hasMany(Order, { foreignKey: 'venditore_id' });
+
 module.exports = {
   sequelize,
   Auction,
@@ -50,5 +67,6 @@ module.exports = {
   Product,
   User,
   Category,
-  Notification
+  Notification,
+  Order
 };
