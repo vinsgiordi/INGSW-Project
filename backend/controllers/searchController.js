@@ -5,6 +5,7 @@ const User = require('../models/user');
 const Bid = require('../models/bid');
 const { Sequelize } = require('sequelize');
 
+// Funzione per cercare le aste
 const searchAuctions = async (req, res) => {
   try {
     const { query, categoryId } = req.query;

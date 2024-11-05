@@ -4,8 +4,8 @@ const Auction = require('../models/auction');
 const Product = require('../models/product');
 const auctionService = require('../services/auctionServices');
 
-// Pianifica il controllo ogni minuto
-cron.schedule('* * * * *', async () => {
+// Pianifica il controllo ogni 5 minuti
+cron.schedule('*/5 * * * *', async () => {
     const now = new Date();
     console.log(`[${now.toISOString()}] Avvio del cron per le aste.`);
 
@@ -22,13 +22,8 @@ cron.schedule('* * * * *', async () => {
 
     console.log(`Aste scadute e attive trovate: ${auctions.length}`);
 
-    // Log per ogni asta rilevata
-    auctions.forEach((auction) => {
-        console.log(`Asta trovata con ID ${auction.id}: stato - ${auction.stato}, tipo - ${auction.tipo}`);
-    });
-
-    // Esegui l'aggiornamento dello stato delle aste scadute
     for (const auction of auctions) {
+        console.log(`Gestione dell'asta scaduta con ID ${auction.id}: tipo - ${auction.tipo}`);
         await auctionService.handleAuctionExpiration(auction);
     }
 });

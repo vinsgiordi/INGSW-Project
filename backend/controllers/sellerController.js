@@ -1,8 +1,9 @@
 const { StatusCodes } = require('http-status-codes');
 const User = require('../models/user');
 const Product = require('../models/product');
-const Category = require('../models/category'); // Assicurati di avere il modello Category
+const Category = require('../models/category');
 
+// Funzione per recuperare i dati di un venditore
 const getSellerDetails = async (req, res) => {
     try {
         const sellerId = req.params.id;
