@@ -71,9 +71,6 @@ class OrderProvider with ChangeNotifier {
     return false; // Ritorna "false" in caso di errore
   }
 
-
-
-
   // Cancella un ordine
   Future<void> deleteOrder(String token, int id) async {
     try {
@@ -81,6 +78,23 @@ class OrderProvider with ChangeNotifier {
       fetchOrders(token); // Aggiorna la lista dopo la cancellazione
     } catch (e) {
       print('Error deleting order: $e');
+    }
+  }
+
+  // Modifica un ordine
+  Future<bool> updateOrder(String token, int id, Map<String, dynamic> updateData) async {
+    try {
+      final response = await OrderRequests().updateOrder(token, id, updateData);
+      if (response.statusCode == 200) {
+        fetchOrders(token); // Aggiorna la lista ordini dopo la modifica
+        return true; // Ritorna true in caso di successo
+      } else {
+        print('Error updating order: ${response.body}');
+        return false; // Ritorna false in caso di errore
+      }
+    } catch (e) {
+      print('Error updating order: $e');
+      return false; // Ritorna false in caso di eccezione
     }
   }
 }

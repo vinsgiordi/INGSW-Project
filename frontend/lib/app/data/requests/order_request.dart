@@ -91,4 +91,20 @@ class OrderRequests {
     });
   }
 
+  // Modifica di un ordine
+  Future<http.Response> updateOrder(String token, int id, Map<String, dynamic> updateData) {
+    return http.put (
+      Uri.parse('$baseUrl/api/orders/update-order/$id'),
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+    ).then((response) {
+      if (response.statusCode != 200) {
+        print('Errore nell\'aggiornare l\'ordine: ${response.body}');
+      }
+      return response;
+    });
+  }
+
 }
