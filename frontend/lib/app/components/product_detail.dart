@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -27,12 +28,49 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   bool isError = false;
   double? highestBid;
   bool _isUserSeller = false;
+  Timer? _refreshTimer; // Timer per aggiornare il prezzo
 
   @override
   void initState() {
     super.initState();
     _loadAuctionDetails();
     _checkIfUserIsSeller();
+    _startPriceRefreshTimer(); // Inizia il timer per aggiornare il prezzo
+  }
+
+  @override
+  void dispose() {
+    _refreshTimer?.cancel(); // Ferma il timer quando la pagina viene chiusa
+    _offerController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _startPriceRefreshTimer() async {
+    // Aggiorna il prezzo ogni minuto (o altra frequenza desiderata)
+    _refreshTimer = Timer.periodic(const Duration(minutes: 1), (timer) async {
+      await _updateCurrentPrice(); // Aggiorna il prezzo ogni minuto
+    });
+  }
+
+  Future<void> _updateCurrentPrice() async {
+    if (auction?.tipo == 'ribasso' && auction != null) {
+      try {
+        final auctionProvider = Provider.of<AuctionProvider>(context, listen: false);
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        String? token = prefs.getString('accessToken');
+
+        if (token != null) {
+          Auction? updatedAuction = await auctionProvider.fetchAuctionById(token, widget.auctionId);
+          if (updatedAuction != null && mounted) {
+            setState(() {
+              auction = updatedAuction; // Aggiorna solo i dettagli dell'asta con il nuovo prezzo
+            });
+          }
+        }
+      } catch (e) {
+        print('Errore durante l\'aggiornamento del prezzo: $e');
+      }
+    }
   }
 
   Future<void> _checkIfUserIsSeller() async {
@@ -46,7 +84,6 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
       });
     }
   }
-
 
   Future<void> _loadAuctionDetails() async {
     final auctionProvider = Provider.of<AuctionProvider>(context, listen: false);
@@ -122,6 +159,32 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
       return;
     }
 
+    // Soglia minima di rialzo
+    final double minIncrement = auction?.incrementoRialzo ?? 10.0;
+    final double minRequiredBid = (highestBid ?? auction!.prezzoIniziale) + minIncrement;
+
+    // Controllo della soglia di rialzo
+    if (bidAmount < minRequiredBid) {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text('Offerta troppo bassa'),
+            content: Text(
+                'La soglia minima di rialzo è di €${minIncrement.toStringAsFixed(2)}. L\'offerta deve essere almeno €${minRequiredBid.toStringAsFixed(2)}.'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('OK'),
+              ),
+            ],
+          );
+        },
+      );
+      return;
+    }
+
+    // Creazione dell'offerta
     final bidProvider = Provider.of<BidProvider>(context, listen: false);
     final bidData = {
       'prodotto_id': auction!.prodottoId,
@@ -135,8 +198,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
         const SnackBar(content: Text('Offerta inviata con successo!')),
       );
       _offerController.clear();
-
-      await _loadAuctionDetails();
+      await _loadAuctionDetails(); // Aggiorna i dettagli dell'asta e l'offerta più alta
     } catch (error) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Errore durante l\'invio dell\'offerta')),
@@ -164,8 +226,6 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     final isAuctionCompleted = auction!.stato == 'completata';
 
     final canBid = !isAuctionExpired && !_isUserSeller && !isAuctionCompleted;
-    print(
-        'Condizioni per fare offerta: isAuctionExpired=$isAuctionExpired, isUserSeller=$_isUserSeller, isAuctionCompleted=$isAuctionCompleted, canBid=$canBid');
     return canBid;
   }
 
@@ -418,12 +478,11 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   }
 
   String _calculateRemainingTime(DateTime? endTime) {
-    // Se l'asta è completata o la data di scadenza è passata, mostra "Asta terminata"
+
     if (auction?.stato == 'completata' || (endTime != null && DateTime.now().isAfter(endTime))) {
       return 'Tempo rimanente: Asta terminata';
     }
 
-    // Controlla se la data di scadenza è valida
     if (endTime == null) return 'N/A';
 
     final currentTime = DateTime.now();
@@ -432,9 +491,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     final hours = remainingDuration.inHours;
     final minutes = remainingDuration.inMinutes % 60;
 
-    // Mostra "Tempo rimanente" se l'asta è ancora attiva
     return 'Tempo rimanente: $hours ore e $minutes minuti';
   }
-
 
 }

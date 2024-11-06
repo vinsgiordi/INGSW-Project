@@ -10,5 +10,6 @@ router.get('/:id', authMiddleware, orderController.getOrderById); // Recupera or
 router.put('/:id', authMiddleware, orderController.updateOrderStatus); // Aggiorna lo stato di un ordine
 router.delete('/:id', authMiddleware, orderController.deleteOrder); // Cancella un ordine
 router.put('/:id/pay', authMiddleware, orderController.markAsPaid); // Marca un ordine come pagato
+router.put('/update-order/:id', authMiddleware, orderController.updateOrder); // Aggiorna un ordine
 
 module.exports = router;

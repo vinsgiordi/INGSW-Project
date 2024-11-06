@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:provider/provider.dart';
-import 'package:intl/intl.dart';  // Importa la libreria per formattare la data
+import 'package:intl/intl.dart';
 import '../../../../../../services/storage_service.dart';
 import '../../../../../data/provider/auction_provider.dart';
 import '../../../category/categories.dart';
@@ -20,6 +20,7 @@ class _EnglishAuctionPageState extends State<EnglishAuctionPage> {
   final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _basePriceController = TextEditingController();
   final TextEditingController _bidIncrementController = TextEditingController(text: '10'); // Default 10€
+  final TextEditingController _endTimeController = TextEditingController(text: '1'); // Default 1h
   int _selectedCategoryId = 1; // Imposta un ID predefinito unico
   List<File> _images = [];
 
@@ -47,7 +48,7 @@ class _EnglishAuctionPageState extends State<EnglishAuctionPage> {
           return;
         }
 
-        int categoryId = _selectedCategoryId;  // Ottieni l'ID della categoria selezionata
+        int categoryId = _selectedCategoryId;
         if (categoryId == 0) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Categoria non valida, per favore seleziona una categoria.')),
@@ -55,9 +56,10 @@ class _EnglishAuctionPageState extends State<EnglishAuctionPage> {
           return;
         }
 
-        // Imposta la data di scadenza automatica (1 ora da ora)
+        // Imposta la data di scadenza basata sull'intervallo di tempo specificato
         DateTime currentTime = DateTime.now();
-        DateTime endTime = currentTime.add(Duration(hours: 1));
+        int auctionDuration = int.parse(_endTimeController.text); // Intervallo di tempo in ore
+        DateTime endTime = currentTime.add(Duration(hours: auctionDuration));
         String formattedEndTime = DateFormat('yyyy-MM-ddTHH:mm:ss').format(endTime);
 
         // Dati da inviare
@@ -68,8 +70,8 @@ class _EnglishAuctionPageState extends State<EnglishAuctionPage> {
           'incremento_rialzo': double.parse(_bidIncrementController.text),
           'categoria_id': categoryId,
           'tipo': 'inglese',
-          'stato': 'attiva', // Imposta lo stato come "attiva" automaticamente
-          'data_scadenza': formattedEndTime, // Aggiungi la data di scadenza calcolata
+          'stato': 'attiva',
+          'data_scadenza': formattedEndTime,
         };
 
         print("Dati prima dell'invio: $auctionData");
@@ -78,14 +80,14 @@ class _EnglishAuctionPageState extends State<EnglishAuctionPage> {
         await Provider.of<AuctionProvider>(context, listen: false).createAuction(
           token,
           auctionData,
-          _images.isNotEmpty ? _images[0].path : null, // Invia immagine solo se presente
+          _images.isNotEmpty ? _images[0].path : null,
         );
 
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Asta all\'inglese creata con successo!')),
         );
 
-        Navigator.pop(context);  // Torna indietro una volta completata la creazione
+        Navigator.pop(context);
       } catch (e) {
         print("Errore: $e");
         ScaffoldMessenger.of(context).showSnackBar(
@@ -112,7 +114,7 @@ class _EnglishAuctionPageState extends State<EnglishAuctionPage> {
                   key: _formKey,
                   child: Column(
                     children: [
-                      const SizedBox(height: 16.0), // Padding tra l'appbar e il titolo
+                      const SizedBox(height: 16.0),
                       TextFormField(
                         controller: _titleController,
                         decoration: InputDecoration(
@@ -171,7 +173,7 @@ class _EnglishAuctionPageState extends State<EnglishAuctionPage> {
                           fillColor: Colors.blue[50],
                           labelText: 'Base d\'asta (€)',
                           border: const OutlineInputBorder(),
-                          prefixIcon: const Icon(Icons.attach_money, color: Colors.blue),
+                          prefixIcon: const Icon(Icons.euro, color: Colors.blue),
                           labelStyle: const TextStyle(color: Colors.blue),
                           hintStyle: const TextStyle(color: Colors.blueGrey),
                           focusedBorder: const OutlineInputBorder(
@@ -185,6 +187,58 @@ class _EnglishAuctionPageState extends State<EnglishAuctionPage> {
                         validator: (value) {
                           if (value == null || value.isEmpty) {
                             return 'Per favore inserisci una base d\'asta';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 16.0),
+                      TextFormField(
+                        controller: _bidIncrementController,
+                        decoration: InputDecoration(
+                          filled: true,
+                          fillColor: Colors.blue[50],
+                          labelText: 'Soglia di Rialzo (€)',
+                          border: const OutlineInputBorder(),
+                          prefixIcon: const Icon(Icons.add, color: Colors.blue),
+                          labelStyle: const TextStyle(color: Colors.blue),
+                          hintStyle: const TextStyle(color: Colors.blueGrey),
+                          focusedBorder: const OutlineInputBorder(
+                            borderSide: BorderSide(color: Colors.blue),
+                          ),
+                          enabledBorder: const OutlineInputBorder(
+                            borderSide: BorderSide(color: Colors.blueGrey),
+                          ),
+                        ),
+                        keyboardType: TextInputType.number,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Per favore inserisci una soglia di rialzo';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 16.0),
+                      TextFormField(
+                        controller: _endTimeController,
+                        decoration: InputDecoration(
+                          filled: true,
+                          fillColor: Colors.blue[50],
+                          labelText: 'Intervallo di Tempo (ore)',
+                          border: const OutlineInputBorder(),
+                          prefixIcon: const Icon(Icons.timer, color: Colors.blue),
+                          labelStyle: const TextStyle(color: Colors.blue),
+                          hintStyle: const TextStyle(color: Colors.blueGrey),
+                          focusedBorder: const OutlineInputBorder(
+                            borderSide: BorderSide(color: Colors.blue),
+                          ),
+                          enabledBorder: const OutlineInputBorder(
+                            borderSide: BorderSide(color: Colors.blueGrey),
+                          ),
+                        ),
+                        keyboardType: TextInputType.number,
+                        validator: (value) {
+                          if (value == null || value.isEmpty || int.tryParse(value) == null) {
+                            return 'Per favore inserisci un intervallo di tempo valido in ore';
                           }
                           return null;
                         },
@@ -211,14 +265,13 @@ class _EnglishAuctionPageState extends State<EnglishAuctionPage> {
                           int index = entry.key;
                           var category = entry.value;
                           return DropdownMenuItem<int>(
-                            value: index + 1,  // Usa un valore unico basato sull'indice
+                            value: index + 1,
                             child: Text(category['name']),
                           );
                         }).toList(),
                         onChanged: (int? value) {
                           setState(() {
-                            _selectedCategoryId = value ?? 1;  // Imposta un ID predefinito
-                            print("Categoria selezionata: $_selectedCategoryId");
+                            _selectedCategoryId = value ?? 1;
                           });
                         },
                         validator: (value) {
@@ -232,7 +285,7 @@ class _EnglishAuctionPageState extends State<EnglishAuctionPage> {
                       ElevatedButton(
                         onPressed: _pickImage,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blue, // Colore blu per il bottone
+                          backgroundColor: Colors.blue,
                           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8),
@@ -267,17 +320,17 @@ class _EnglishAuctionPageState extends State<EnglishAuctionPage> {
                       ),
                       const SizedBox(height: 30.0),
                       ElevatedButton(
-                        onPressed: () => _createEnglishAuction(context),  // Chiama la funzione di creazione dell'asta
+                        onPressed: () => _createEnglishAuction(context),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blue, // Colore blu per il bottone
-                          padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15), // Aumenta il padding
+                          backgroundColor: Colors.blue,
+                          padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(20),
                           ),
                         ),
                         child: const Text(
                           'Crea Asta',
-                          style: TextStyle(color: Colors.white, fontSize: 15), // Testo bianco per il bottone
+                          style: TextStyle(color: Colors.white, fontSize: 15),
                         ),
                       ),
                     ],

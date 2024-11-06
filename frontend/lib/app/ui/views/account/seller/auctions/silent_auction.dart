@@ -21,6 +21,7 @@ class _SilentAuctionPageState extends State<SilentAuctionPage> {
   final TextEditingController _endDateController = TextEditingController();
   final TextEditingController _priceController = TextEditingController(); // Aggiunto il controller per il prezzo
   DateTime? _selectedDate;
+  TimeOfDay? _selectedTime;
   int _selectedCategoryId = 1; // ID predefinito per la categoria
   List<File> _images = [];
 
@@ -34,25 +35,49 @@ class _SilentAuctionPageState extends State<SilentAuctionPage> {
   }
 
   Future<void> _selectDate(BuildContext context) async {
-    final DateTime? picked = await showDatePicker(
+    final DateTime? pickedDate = await showDatePicker(
       context: context,
       initialDate: DateTime.now(),
       firstDate: DateTime.now(),
       lastDate: DateTime(2101),
     );
-    if (picked != null && picked != _selectedDate) {
+    if (pickedDate != null && pickedDate != _selectedDate) {
       setState(() {
-        _selectedDate = picked;
-        _endDateController.text = DateFormat('yyyy-MM-dd').format(_selectedDate!);
+        _selectedDate = pickedDate;
+        _updateEndDateField();
       });
     }
   }
 
-  // Funzione per creare un'asta silenziosa
+  Future<void> _selectTime(BuildContext context) async {
+    final TimeOfDay? pickedTime = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.now(),
+    );
+    if (pickedTime != null && pickedTime != _selectedTime) {
+      setState(() {
+        _selectedTime = pickedTime;
+        _updateEndDateField();
+      });
+    }
+  }
+
+  void _updateEndDateField() {
+    if (_selectedDate != null && _selectedTime != null) {
+      final DateTime combinedDateTime = DateTime(
+        _selectedDate!.year,
+        _selectedDate!.month,
+        _selectedDate!.day,
+        _selectedTime!.hour,
+        _selectedTime!.minute,
+      );
+      _endDateController.text = "${DateFormat('dd/MM/yyyy').format(combinedDateTime)} ${_selectedTime!.format(context)}";
+    }
+  }
+
   Future<void> _createSilentAuction(BuildContext context) async {
     if (_formKey.currentState!.validate()) {
       try {
-        // Ottieni il token
         String? token = await StorageService().getAccessToken();
 
         if (token == null) {
@@ -62,29 +87,35 @@ class _SilentAuctionPageState extends State<SilentAuctionPage> {
           return;
         }
 
-        // Dati da inviare per l'asta silenziosa
+        final DateTime auctionEndDate = DateTime(
+          _selectedDate!.year,
+          _selectedDate!.month,
+          _selectedDate!.day,
+          _selectedTime!.hour,
+          _selectedTime!.minute,
+        );
+
         Map<String, dynamic> auctionData = {
           'titolo': _titleController.text,
           'descrizione': _descriptionController.text,
           'categoria_id': _selectedCategoryId,
           'tipo': 'silenziosa',
-          'stato': 'attiva', // Imposta lo stato come attiva
-          'data_scadenza': _selectedDate?.toIso8601String(), // Data di scadenza selezionata
-          'prezzo_iniziale': double.parse(_priceController.text), // Usare il valore del prezzo inserito
+          'stato': 'attiva',
+          'data_scadenza': auctionEndDate.toIso8601String(),
+          'prezzo_iniziale': double.parse(_priceController.text),
         };
 
-        // Logica per inviare l'asta silenziosa tramite provider
         await Provider.of<AuctionProvider>(context, listen: false).createAuction(
           token,
           auctionData,
-          _images.isNotEmpty ? _images[0].path : null, // Invia immagine solo se presente
+          _images.isNotEmpty ? _images[0].path : null,
         );
 
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Asta silenziosa creata con successo!')),
         );
 
-        Navigator.pop(context); // Torna indietro alla schermata precedente
+        Navigator.pop(context);
       } catch (e) {
         print("Errore: $e");
         ScaffoldMessenger.of(context).showSnackBar(
@@ -170,7 +201,7 @@ class _SilentAuctionPageState extends State<SilentAuctionPage> {
                           fillColor: Colors.blue[50],
                           labelText: 'Prezzo Iniziale (€)',
                           border: const OutlineInputBorder(),
-                          prefixIcon: const Icon(Icons.attach_money, color: Colors.blue),
+                          prefixIcon: const Icon(Icons.euro, color: Colors.blue),
                           labelStyle: const TextStyle(color: Colors.blue),
                           hintStyle: const TextStyle(color: Colors.blueGrey),
                           focusedBorder: const OutlineInputBorder(
@@ -180,7 +211,7 @@ class _SilentAuctionPageState extends State<SilentAuctionPage> {
                             borderSide: BorderSide(color: Colors.blueGrey),
                           ),
                         ),
-                        keyboardType: TextInputType.number, // Il campo accetta solo numeri
+                        keyboardType: TextInputType.number,
                         validator: (value) {
                           if (value == null || value.isEmpty) {
                             return 'Per favore inserisci un prezzo iniziale';
@@ -189,35 +220,54 @@ class _SilentAuctionPageState extends State<SilentAuctionPage> {
                         },
                       ),
                       const SizedBox(height: 16.0),
-                      TextFormField(
-                        controller: _endDateController,
-                        decoration: InputDecoration(
-                          filled: true,
-                          fillColor: Colors.blue[50],
-                          labelText: 'Data di Scadenza',
-                          border: const OutlineInputBorder(),
-                          prefixIcon: IconButton(
-                            icon: const Icon(Icons.calendar_today, color: Colors.blue),
-                            onPressed: () {
-                              _selectDate(context);
-                            },
+                      Row(
+                        children: [
+                          Expanded(
+                            child: TextFormField(
+                              controller: _endDateController,
+                              decoration: InputDecoration(
+                                filled: true,
+                                fillColor: Colors.blue[50],
+                                labelText: 'Data di Scadenza',
+                                border: const OutlineInputBorder(),
+                                prefixIcon: IconButton(
+                                  icon: const Icon(Icons.calendar_today, color: Colors.blue),
+                                  onPressed: () => _selectDate(context),
+                                ),
+                                labelStyle: const TextStyle(color: Colors.blue),
+                                hintStyle: const TextStyle(color: Colors.blueGrey),
+                                focusedBorder: const OutlineInputBorder(
+                                  borderSide: BorderSide(color: Colors.blue),
+                                ),
+                                enabledBorder: const OutlineInputBorder(
+                                  borderSide: BorderSide(color: Colors.blueGrey),
+                                ),
+                              ),
+                              readOnly: true,
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Per favore seleziona una data di scadenza';
+                                }
+                                return null;
+                              },
+                            ),
                           ),
-                          labelStyle: const TextStyle(color: Colors.blue),
-                          hintStyle: const TextStyle(color: Colors.blueGrey),
-                          focusedBorder: const OutlineInputBorder(
-                            borderSide: BorderSide(color: Colors.blue),
+                          const SizedBox(width: 10),
+                          ElevatedButton(
+                            onPressed: () => _selectTime(context),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.blue,
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                            child: const Text(
+                              'Seleziona Ora',
+                              style: TextStyle(color: Colors.white),
+                            ),
                           ),
-                          enabledBorder: const OutlineInputBorder(
-                            borderSide: BorderSide(color: Colors.blueGrey),
-                          ),
-                        ),
-                        readOnly: true,
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Per favore seleziona una data di scadenza';
-                          }
-                          return null;
-                        },
+                        ],
                       ),
                       const SizedBox(height: 16.0),
                       DropdownButtonFormField<int>(
@@ -241,13 +291,13 @@ class _SilentAuctionPageState extends State<SilentAuctionPage> {
                           int index = entry.key;
                           var category = entry.value;
                           return DropdownMenuItem<int>(
-                            value: index + 1, // ID della categoria
+                            value: index + 1,
                             child: Text(category['name']),
                           );
                         }).toList(),
                         onChanged: (int? value) {
                           setState(() {
-                            _selectedCategoryId = value ?? 1; // Imposta un ID predefinito
+                            _selectedCategoryId = value ?? 1;
                           });
                         },
                         validator: (value) {

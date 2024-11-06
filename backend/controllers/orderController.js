@@ -4,30 +4,20 @@ const Product = require('../models/product');
 const User = require('../models/user');
 
 // Crea un nuovo ordine
-const createOrder = async (req, res) => {
-    const { prodotto_id, auction_id, indirizzo_spedizione, metodo_pagamento, importo_totale } = req.body;
-
+const createOrder = async (prodotto_id, auction_id, indirizzo_spedizione, metodo_pagamento, importo_totale) => {
     try {
-        // Otteniamo l'ID dell'acquirente dal token JWT
-        const acquirente_id = req.user.id;
-
-        // Funzione per ottenere il venditore associato al prodotto
-        const venditore_id = await getVenditoreId(prodotto_id);
-
-        const order = await Order.create({
+        const newOrder = await Order.create({
             prodotto_id,
             auction_id,
-            acquirente_id,
-            venditore_id,
             indirizzo_spedizione,
             metodo_pagamento,
             importo_totale,
-            stato: 'in elaborazione' // Stato iniziale dell'ordine
+            stato: 'in elaborazione'
         });
-
-        res.status(StatusCodes.CREATED).json(order);
+        return newOrder;
     } catch (error) {
-        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: error.message });
+        console.error("Errore nella creazione dell'ordine:", error);
+        throw error;
     }
 };
 
@@ -177,6 +167,27 @@ const markAsPaid = async (req, res) => {
     }
 };
 
+// Aggiornare un ordine
+const updateOrder = async (req, res) => {
+    const { id } = req.params;
+    const updateData = req.body;
+
+    try {
+        const order = await Order.findByPk(id);
+
+        if (!order) {
+            return res.status(404).json({ message: 'Ordine non trovato' });
+        }
+
+        // Aggiorna solo i campi presenti in `updateData`
+        await order.update(updateData);
+
+        return res.status(200).json({ message: 'Ordine aggiornato con successo', order });
+    } catch (error) {
+        console.error('Errore durante l\'aggiornamento dell\'ordine:', error);
+        return res.status(500).json({ message: 'Errore del server' });
+    }
+};
 
 module.exports = {
     createOrder,
@@ -184,5 +195,6 @@ module.exports = {
     getOrderById,
     updateOrderStatus,
     deleteOrder,
-    markAsPaid
+    markAsPaid,
+    updateOrder
 };

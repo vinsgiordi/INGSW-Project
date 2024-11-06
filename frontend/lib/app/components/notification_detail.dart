@@ -21,74 +21,71 @@ class NotificationDetailPage extends StatefulWidget {
 }
 
 class _NotificationDetailPageState extends State<NotificationDetailPage> {
-  Auction? auction;
-  bool isLoading = true;
+  Future<Auction?>? auctionFuture;
 
   Future<String> _getToken() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString('accessToken') ?? '';
   }
 
-  void _acceptBid() async {
+  Future<Auction?> _loadAuction() async {
     final token = await _getToken();
-    Provider.of<AuctionProvider>(context, listen: false)
-        .acceptBidForSilentAuction(token, widget.auctionId, widget.bidId)
-        .then((_) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Offerta accettata con successo.')),
-      );
-      Navigator.pop(context);
-    }).catchError((error) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Errore nell\'accettazione dell\'offerta: $error')),
-      );
-    });
-  }
 
-  void _rejectAllBids() async {
-    final token = await _getToken();
-    Provider.of<AuctionProvider>(context, listen: false)
-        .rejectAllBidsForSilentAuction(token, widget.auctionId)
-        .then((_) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Tutte le offerte rifiutate con successo.')),
-      );
-      Navigator.pop(context);
-    }).catchError((error) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Errore nel rifiuto delle offerte: $error')),
-      );
-    });
-  }
-
-  Future<void> _loadAuction() async {
-    final token = await _getToken();
-    print('Auction ID ricevuto: ${widget.auctionId}');
+    // Aggiungi un controllo per verificare che l'ID non sia nullo o zero
+    if (widget.auctionId == 0) {
+      print("ID asta non valido: ${widget.auctionId}");
+      return null;  // Evita il caricamento dell'asta e restituisci null
+    }
 
     try {
       Auction? loadedAuction = await Provider.of<AuctionProvider>(context, listen: false)
           .fetchAuctionById(token, widget.auctionId);
-      if (loadedAuction != null) {
-        print('Auction loaded successfully: ${loadedAuction.id}');
-      } else {
-        print('No auction found for ID: ${widget.auctionId}');
-      }
-      setState(() {
-        auction = loadedAuction;
-        isLoading = false;
-      });
+      return loadedAuction;
     } catch (e) {
       print('Errore nel caricamento dell\'asta: $e');
-      setState(() {
-        isLoading = false;
-      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Errore nel caricamento dell\'asta')),
+      );
+      return null;
     }
   }
 
   @override
   void initState() {
     super.initState();
-    _loadAuction();
+    auctionFuture = _loadAuction(); // Avvia il caricamento dell'asta
+  }
+
+  void _acceptBid(Auction auction) async {
+    final token = await _getToken();
+    try {
+      await Provider.of<AuctionProvider>(context, listen: false)
+          .acceptBidForSilentAuction(token, widget.auctionId, widget.bidId);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Offerta accettata con successo.')),
+      );
+      Navigator.pop(context);
+    } catch (error) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Errore nell\'accettazione dell\'offerta: $error')),
+      );
+    }
+  }
+
+  void _rejectAllBids(Auction auction) async {
+    final token = await _getToken();
+    try {
+      await Provider.of<AuctionProvider>(context, listen: false)
+          .rejectAllBidsForSilentAuction(token, widget.auctionId);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Offerta rifiutata con successo')),
+      );
+      Navigator.pop(context);
+    } catch (error) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Errore nel rifiuto delle offerte: $error')),
+      );
+    }
   }
 
   @override
@@ -97,49 +94,58 @@ class _NotificationDetailPageState extends State<NotificationDetailPage> {
       appBar: AppBar(
         title: const Text('Dettagli Notifica'),
       ),
-      body: isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : auction == null
-          ? const Center(child: Text('Asta non trovata'))
-          : Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              widget.notification.message,
-              style: const TextStyle(fontSize: 18),
-            ),
-            const SizedBox(height: 32),
-            // Mostra i pulsanti solo se l'asta è di tipo silenziosa e in stato attivo
-            if (auction!.tipo == 'silenziosa' && auction!.stato == 'attiva')
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      body: FutureBuilder<Auction?>(
+        future: auctionFuture,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError || snapshot.data == null) {
+            return const Center(child: Text('Errore nel caricamento dei dettagli dell\'asta'));
+          } else {
+            final auction = snapshot.data!;
+            final bool isBidNotification = widget.bidId != 0 && auction.stato == 'attiva' && auction.tipo == 'silenziosa';
+
+            return Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  ElevatedButton(
-                    onPressed: _acceptBid,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.green,
-                    ),
-                    child: const Text(
-                      'Accetta Offerta',
-                      style: TextStyle(color: Colors.white),
-                    ),
+                  Text(
+                    widget.notification.message,
+                    style: const TextStyle(fontSize: 18),
                   ),
-                  ElevatedButton(
-                    onPressed: _rejectAllBids,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red,
+                  const SizedBox(height: 32),
+                  if (isBidNotification)
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        ElevatedButton(
+                          onPressed: () => _acceptBid(auction),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.green,
+                          ),
+                          child: const Text(
+                            'Accetta Offerta',
+                            style: TextStyle(color: Colors.white),
+                          ),
+                        ),
+                        ElevatedButton(
+                          onPressed: () => _rejectAllBids(auction),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.red,
+                          ),
+                          child: const Text(
+                            'Rifiuta Offerta',
+                            style: TextStyle(color: Colors.white),
+                          ),
+                        ),
+                      ],
                     ),
-                    child: const Text(
-                      'Rifiuta Offerta',
-                      style: TextStyle(color: Colors.white),
-                    ),
-                  ),
                 ],
               ),
-          ],
-        ),
+            );
+          }
+        },
       ),
     );
   }

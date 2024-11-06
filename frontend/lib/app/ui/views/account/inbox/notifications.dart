@@ -51,7 +51,6 @@ class _NotificationsPageState extends State<NotificationsPage> {
     }
   }
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -107,6 +106,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                       ],
                     ),
                     onTap: () {
+                      print("Navigating to NotificationDetailPage with auctionId: ${notification.auctionId}");
                       if (notification.isInteractive) {
                         Navigator.push(
                           context,

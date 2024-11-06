@@ -8,70 +8,90 @@ const dayjs = require('../utils/dayjs');
 
 // Crea una nuova offerta
 const createBid = async (req, res) => {
-  const { prodotto_id, auction_id, importo } = req.body;
+    const { prodotto_id, auction_id, importo } = req.body;
 
-  try {
-      if (!prodotto_id || !auction_id || !importo) {
-          return res.status(StatusCodes.BAD_REQUEST).json({
-              error: "Per favore inserisci tutte le informazioni richieste!"
-          });
-      }
+    try {
+        if (!prodotto_id || !auction_id || !importo) {
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                error: "Per favore inserisci tutte le informazioni richieste!"
+            });
+        }
 
-      // Trova l'asta per verificare i requisiti
-      const auction = await Auction.findByPk(auction_id, {
-          include: {
-              model: Product,
-              attributes: ['nome']
-          }
-      });
+        // Trova l'asta e verifica che esista
+        const auction = await Auction.findByPk(auction_id, {
+            include: {
+                model: Product,
+                attributes: ['nome']
+            }
+        });
 
-      if (!auction || !auction.Product) {
-          return res.status(StatusCodes.NOT_FOUND).json({
-              error: "Asta o prodotto non trovati"
-          });
-      }
+        if (!auction || !auction.Product) {
+            return res.status(StatusCodes.NOT_FOUND).json({
+                error: "Asta o prodotto non trovati"
+            });
+        }
 
-      // Impedisce al venditore di fare offerte sulla propria asta
-      if (auction.venditore_id === req.user.id) {
-          return res.status(StatusCodes.FORBIDDEN).json({
-              error: "Non puoi fare offerte sulla tua asta."
-          });
-      }
+        // Verifica se il venditore sta tentando di fare un'offerta sulla propria asta
+        if (auction.venditore_id === req.user.id) {
+            return res.status(StatusCodes.FORBIDDEN).json({
+                error: "Non puoi fare offerte sulla tua asta."
+            });
+        }
 
-      // Verifica che l'asta non sia scaduta o completata
-      if (new Date() > new Date(auction.data_scadenza) || auction.stato === 'completata') {
-          return res.status(StatusCodes.BAD_REQUEST).json({
-              error: "L'asta è scaduta o completata. Non puoi fare un'offerta."
-          });
-      }
+        // Verifica che l'asta non sia scaduta o completata
+        if (new Date() > new Date(auction.data_scadenza) || auction.stato === 'completata') {
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                error: "L'asta è scaduta o completata. Non puoi fare un'offerta."
+            });
+        }
 
-      // Crea l'offerta
-      const bid = await Bid.create({
-          prodotto_id,
-          auction_id,
-          utente_id: req.user.id,
-          importo
-      });
+        // Controllo della soglia di rialzo per l'asta all'inglese
+        if (auction.tipo === 'inglese') {
+            const minIncrease = parseFloat(auction.incremento_rialzo) || 10;
+            console.log(`Valore della soglia di rialzo (incremento_rialzo) per l'asta ID ${auction.id}:`, minIncrease);
 
-      // Aggiorna il timer per le aste di tipo inglese
-      if (auction.tipo === 'inglese') {
-          const newEndTime = dayjs().add(1, 'hour').format('YYYY-MM-DD HH:mm:ss');
-          auction.data_scadenza = newEndTime;
-          await auction.save();
-      }
+            const highestBid = await Bid.findOne({
+                where: { auction_id: auction_id },
+                order: [['importo', 'DESC']],
+            });
 
-      // Invia una notifica al venditore
-      const venditoreId = auction.venditore_id;
-      await Notification.create({
-          utente_id: venditoreId,
-          messaggio: `Hai ricevuto una nuova offerta di €${importo} per il tuo prodotto ${auction.Product.nome}.`
-      });
+            // Calcola l'importo minimo richiesto per l'offerta
+            const currentBid = highestBid ? parseFloat(highestBid.importo) : parseFloat(auction.prezzo_iniziale);
+            const minRequiredBid = currentBid + minIncrease;
 
-      res.status(StatusCodes.CREATED).json(bid);
-  } catch (error) {
-      console.error('Errore nella creazione dell\'offerta:', error);
-      res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: error.message });
-  }
+            console.log(`Importo offerto: ${importo}, Offerta più alta attuale: ${currentBid}, Soglia richiesta: ${minRequiredBid}`);
+
+            // Se l'offerta non raggiunge la soglia richiesta, restituisci un errore
+            if (importo < minRequiredBid) {
+                return res.status(StatusCodes.BAD_REQUEST).json({
+                    error: `La tua offerta deve essere almeno di €${minRequiredBid.toFixed(2)} per rispettare la soglia di rialzo di €${minIncrease.toFixed(2)}.`
+                });
+            }
+
+            // Aggiorna la data di scadenza dell'asta se l'offerta è valida
+            auction.data_scadenza = dayjs().add(1, 'hour').format('YYYY-MM-DD HH:mm:ss');
+            await auction.save();
+        }
+
+        // Crea l'offerta se valida
+        const bid = await Bid.create({
+            prodotto_id,
+            auction_id,
+            utente_id: req.user.id,
+            importo
+        });
+
+        // Notifica il venditore per l'offerta ricevuta
+        await Notification.create({
+            utente_id: auction.venditore_id,
+            messaggio: `Hai ricevuto un'offerta per il tuo prodotto ${auction.Product.nome}.`,
+        });
+
+        res.status(StatusCodes.CREATED).json(bid);
+    } catch (error) {
+        console.error('Errore nella creazione dell\'offerta:', error);
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: error.message });
+    }
 };
 
 // Recupera tutte le offerte per un determinato prodotto

@@ -6,12 +6,6 @@ const Category = require('../models/category');
 const { User } = require('../models/associations');
 const { Op } = require('sequelize');
 const auctionService = require('../services/auctionServices');
-const dayjs = require('../utils/dayjs');
-
-// Funzione per formattare le date in UTC
-const formatDateUTC = (date) => {
-  return dayjs(date).tz('Europe/Rome').utc().format();
-};
 
 // Crea una nuova asta
 const createAuction = async (req, res) => {
@@ -49,15 +43,11 @@ const createAuction = async (req, res) => {
             venditore_id: req.user.id // L'utente autenticato è il venditore
         });
 
-        // Converti la data di scadenza in UTC (fuso orario Europe/Rome)
-        const dataScadenzaUTC = formatDateUTC(data_scadenza);
-        console.log('Data di scadenza UTC:', dataScadenzaUTC);
-
         // Configura l'asta in base al tipo di asta
         let auctionData = {
             prodotto_id: product.id,
             tipo,
-            data_scadenza: dataScadenzaUTC,  // Usa la data convertita in UTC
+            data_scadenza,  // Usa la data convertita in UTC
             prezzo_iniziale,
             stato,
             venditore_id: req.user.id

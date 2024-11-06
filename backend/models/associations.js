@@ -13,8 +13,8 @@ const Order = require('./order');
 // Definizione delle associazioni
 
 // Un'asta (Auction) è associata a un prodotto (Product)
-Auction.belongsTo(Product, { foreignKey: 'prodotto_id' });
-Product.hasMany(Auction, { foreignKey: 'prodotto_id' });
+Auction.belongsTo(Product, { foreignKey: 'prodotto_id', onDelete: 'CASCADE'});
+Product.hasMany(Auction, { foreignKey: 'prodotto_id', onDelete: 'CASCADE' });
 
 // Un'asta (Auction) è associata a un venditore (User)
 Auction.belongsTo(User, { foreignKey: 'venditore_id', as: 'venditore' });
@@ -29,8 +29,8 @@ Bid.belongsTo(User, { foreignKey: 'utente_id' });
 User.hasMany(Bid, { foreignKey: 'utente_id', onDelete: 'CASCADE' });
 
 // Un'offerta (Bid) è associata a un prodotto (Product)
-Bid.belongsTo(Product, { foreignKey: 'prodotto_id' });
-Product.hasMany(Bid, { foreignKey: 'prodotto_id' });
+Bid.belongsTo(Product, { foreignKey: 'prodotto_id', onDelete: 'CASCADE'});
+Product.hasMany(Bid, { foreignKey: 'prodotto_id', onDelete: 'CASCADE' });
 
 // Un prodotto (Product) appartiene a una categoria (Category)
 Product.belongsTo(Category, { foreignKey: 'categoria_id' });
@@ -59,6 +59,11 @@ User.hasMany(Order, { foreignKey: 'acquirente_id' });
 // Un ordine (Order) è associato a un venditore (User)
 Order.belongsTo(User, { foreignKey: 'venditore_id', as: 'venditore' });
 User.hasMany(Order, { foreignKey: 'venditore_id' });
+
+// Un'asta (Auction) è associata a molte notifiche (Notifications)
+Auction.hasMany(Notification, { foreignKey: 'auction_id', onDelete: 'CASCADE' });
+Notification.belongsTo(Auction, { foreignKey: 'auction_id', onDelete: 'CASCADE' });
+
 
 module.exports = {
   sequelize,

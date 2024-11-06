@@ -152,7 +152,7 @@ class _ReverseAuctionPageState extends State<ReverseAuctionPage> {
                           fillColor: Colors.blue[50],
                           labelText: 'Prezzo Iniziale (€)',
                           border: const OutlineInputBorder(),
-                          prefixIcon: const Icon(Icons.attach_money, color: Colors.blue),
+                          prefixIcon: const Icon(Icons.euro, color: Colors.blue),
                           labelStyle: const TextStyle(color: Colors.blue),
                           hintStyle: const TextStyle(color: Colors.blueGrey),
                           focusedBorder: const OutlineInputBorder(
@@ -204,7 +204,7 @@ class _ReverseAuctionPageState extends State<ReverseAuctionPage> {
                           fillColor: Colors.blue[50],
                           labelText: 'Prezzo Minimo (segreto)',
                           border: const OutlineInputBorder(),
-                          prefixIcon: const Icon(Icons.money_off, color: Colors.blue),
+                          prefixIcon: const Icon(Icons.euro, color: Colors.blue),
                           labelStyle: const TextStyle(color: Colors.blue),
                           hintStyle: const TextStyle(color: Colors.blueGrey),
                           focusedBorder: const OutlineInputBorder(
@@ -228,7 +228,7 @@ class _ReverseAuctionPageState extends State<ReverseAuctionPage> {
                         decoration: InputDecoration(
                           filled: true,
                           fillColor: Colors.blue[50],
-                          labelText: 'Intervallo di tempo (ore)',
+                          labelText: 'Timer decremento prezzo (ore)',
                           border: const OutlineInputBorder(),
                           prefixIcon: const Icon(Icons.timer, color: Colors.blue),
                           labelStyle: const TextStyle(color: Colors.blue),
