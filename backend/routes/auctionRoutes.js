@@ -9,6 +9,7 @@ router.get('/ending-soon', authMiddleware, auctionController.getAuctionsByEnding
 router.get('/active', authMiddleware, auctionController.getAllActiveAuctions); // Recupera tutte le aste con stato attivo
 router.get('/completed', authMiddleware, auctionController.getAuctionCompleted); // Recupera tutte le aste con stato completato
 router.get('/unsold', authMiddleware, auctionController.getUnsoldAuctions); // Recupera tutte le aste che non sono state vendute
+router.get('/user/active', authMiddleware, auctionController.getUserActiveAuctions); // Recupera tutte le aste attive di un utente loggato
 router.post('/silent-auction/:auctionId/accept-bid/:bidId', authMiddleware, auctionController.acceptBidForSilentAuction); // Per accettare le offerte per le aste silenziose
 router.post('/silent-auction/:auctionId/reject-all-bids', authMiddleware, auctionController.rejectAllBidsForSilentAuction); // Per rifiutare le offerte per le aste silenziose
 router.get('/by-type', authMiddleware, auctionController.getAuctionsByType); // Recupera tutte le aste per il singolo tipo

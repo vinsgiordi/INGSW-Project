@@ -3,7 +3,7 @@ const Auction = require('../models/auction');
 const Product = require('../models/product');
 const Bid = require('../models/bid');
 const Category = require('../models/category');
-const { User } = require('../models/associations');
+const { User, Order } = require('../models/associations');
 const { Op } = require('sequelize');
 const auctionService = require('../services/auctionServices');
 
@@ -347,6 +347,39 @@ const getUnsoldAuctions = async (req, res) => {
     }
 };
 
+// Recupera tutte le aste attive di un utente loggato
+const getUserActiveAuctions = async (req, res) => {
+    try {
+        const userId = req.user.id;  // Ottieni l'ID dell'utente loggato dal token
+
+        const auctions = await Auction.findAll({
+            where: {
+                stato: 'attiva',         // Filtra solo le aste con stato "attiva"
+                venditore_id: userId     // Filtra solo le aste dell'utente loggato
+            },
+            include: [
+                {
+                    model: Product,   // Collega il modello Product
+                    attributes: ['id', 'nome', 'descrizione', 'immagine_principale', 'prezzo_iniziale', 'categoria_id', 'venditore_id']
+                },
+                {
+                    model: Bid, // Include anche le offerte associate all'asta
+                    attributes: ['id', 'importo', 'utente_id']
+                }
+            ]
+        });
+
+        // Controlla se l'utente non ha aste attive
+        if (auctions.length === 0) {
+            return res.status(200).json({ message: "Al momento non hai aste attive" });
+        }
+
+        res.status(200).json(auctions);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
 // Accetta l'offerta per un'asta silenziosa specifica
 const acceptBidForSilentAuction = async (req, res) => {
     const { auctionId, bidId } = req.params;
@@ -428,28 +461,6 @@ const updateAuction = async (req, res) => {
     }
 };
 
-const handleAuctionCompletion = async (req, res) => {
-    const auctionId = req.params.id;
-    const auction = await Auction.findByPk(auctionId);
-
-    if (!auction) {
-        return res.status(404).json({ error: 'Asta non trovata' });
-    }
-
-    if (auction.tipo === 'tempo fisso') {
-        await auctionService.handleAuctionExpiration(auction);
-    } else if (auction.tipo === 'inglese') {
-        await auctionService.handleEnglishAuctionExpiration(auction);
-    } else if (auction.tipo === 'ribasso') {
-        await auctionService.handleReverseAuction(auction);
-    } else if (auction.tipo === 'silenziosa') {
-        const { acceptedBidId } = req.body;
-        await auctionService.acceptSilentAuctionBid(auction, acceptedBidId);
-    }
-
-    res.status(200).json({ message: 'Asta gestita correttamente' });
-};
-
 // Cancella un'asta per ID
 const deleteAuction = async (req, res) => {
     try {
@@ -463,14 +474,27 @@ const deleteAuction = async (req, res) => {
             return res.status(StatusCodes.UNAUTHORIZED).json({ error: 'Non autorizzato' });
         }
 
+        // Rimuove tutte le offerte associate all'asta (Bids)
         await Bid.destroy({ where: { auction_id: auction.id } });
 
+        // Rimuove tutti gli ordini associati all'asta (Orders)
+        await Order.destroy({ where: { auction_id: auction.id } });
+
+        // Rimuove il prodotto associato all'asta
+        const product = await Product.findByPk(auction.prodotto_id);
+        if (product) {
+            await product.destroy();
+        }
+
+        // Elimina l'asta stessa
         await auction.destroy();
-        res.status(StatusCodes.OK).json({ message: 'Asta cancellata con successo' });
+
+        res.status(StatusCodes.OK).json({ message: 'Asta e dati associati cancellati con successo' });
     } catch (error) {
         res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: error.message });
     }
 };
+
 
 // Controllo per verificare se l'utente è il venditore dell'asta
 const isUserSeller = async (req, res) => {
@@ -493,7 +517,6 @@ const isUserSeller = async (req, res) => {
     }
 };
 
-
 module.exports = {
     createAuction,
     getAllAuctions,
@@ -504,10 +527,10 @@ module.exports = {
     getAuctionsByType,
     getAuctionCompleted,
     getUnsoldAuctions,
+    getUserActiveAuctions,
     acceptBidForSilentAuction,
     rejectAllBidsForSilentAuction,
     updateAuction,
-    handleAuctionCompletion,
     deleteAuction,
     isUserSeller
 };
