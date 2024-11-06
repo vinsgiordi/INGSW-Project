@@ -247,4 +247,30 @@ class AuctionRequests {
       throw Exception('Errore nel controllo del venditore');
     }
   }
+
+  // Recupera tutte le aste attive di un utente loggato
+  Future<List<Auction>> getUserActiveAuctions(String token) async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/api/auctions/user/active'),
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+
+      if (data is Map<String, dynamic> && data.containsKey('message')) {
+        // Messaggio per utente senza aste attive
+        print(data['message']);
+        return [];
+      } else {
+        return (data as List).map((auction) => Auction.fromJson(auction)).toList();
+      }
+    } else {
+      throw Exception('Errore nel caricamento delle aste attive dell\'utente');
+    }
+  }
+
 }

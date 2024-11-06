@@ -72,10 +72,17 @@ class AccountPage extends StatelessWidget {
                 ),
               ),
               ListTile(
+                leading: const Icon(Icons.add_business_rounded),
+                title: const Text('Crea asta'),
+                onTap: () {
+                  Navigator.pushNamed(context, AppRoutes.chooseAuctionType);
+                },
+              ),
+              ListTile(
                 leading: const Icon(Icons.shopping_bag),
                 title: const Text('All\'asta'),
                 onTap: () {
-                  Navigator.pushNamed(context, AppRoutes.chooseAuctionType);
+                  Navigator.pushNamed(context, AppRoutes.userAuctions);
                 },
               ),
               ListTile(
@@ -109,7 +116,6 @@ class AccountPage extends StatelessWidget {
                   final int unreadCount = notificationProvider.notifications
                       .where((notification) => !notification.isRead)
                       .length;
-
                   return ListTile(
                     leading: const Icon(Icons.notifications),
                     title: const Text('Notifiche'),
@@ -129,7 +135,6 @@ class AccountPage extends StatelessWidget {
                   );
                 },
               ),
-
               // ACCOUNT
               const ListTile(
                 title: Text(

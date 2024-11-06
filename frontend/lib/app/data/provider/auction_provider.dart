@@ -9,6 +9,7 @@ class AuctionProvider with ChangeNotifier {
   List<Auction> _auctionType = [];
   List<Auction> _carouselAuctions = [];
   List<Auction> _unsoldAuctions = [];
+  List<Auction> _activeUserAuctions = [];
   bool _isUserSeller = false;
   bool _isLoading = false;
 
@@ -18,6 +19,7 @@ class AuctionProvider with ChangeNotifier {
   List<Auction> get auctionType => _auctionType;
   List<Auction> get carouselAuctions => _carouselAuctions;
   List<Auction> get unsoldAuctions => _unsoldAuctions;
+  List<Auction> get activeUserAuctions => _activeUserAuctions;
   bool get IsUserSeller => _isUserSeller;
   bool get isLoading => _isLoading;
 
@@ -199,7 +201,7 @@ class AuctionProvider with ChangeNotifier {
     notifyListeners();
   }
 
-// Recupera tutte le aste non vendute
+  // Recupera tutte le aste non vendute
   Future<void> fetchUnsoldAuctions(String token) async {
     _isLoading = true;
     notifyListeners();
@@ -248,12 +250,17 @@ class AuctionProvider with ChangeNotifier {
   }
 
   // Cancella un'asta
-  Future<void> deleteAuction(String token, int id) async {
+  Future<bool> deleteAuction(String token, int auctionId) async {
     try {
-      await AuctionRequests().deleteAuction(token, id);
-      fetchAllAuctions(token);
+      // Effettua la chiamata API per eliminare l'asta
+      await AuctionRequests().deleteAuction(token, auctionId);
+      // Rimuove l'asta dalla lista locale
+      _activeUserAuctions.removeWhere((auction) => auction.id == auctionId);
+      notifyListeners();
+      return true;
     } catch (e) {
-      print('Error deleting auction: $e');
+      print('Errore durante l\'eliminazione dell\'asta: $e');
+      return false;
     }
   }
 
@@ -269,4 +276,20 @@ class AuctionProvider with ChangeNotifier {
     }
   }
 
+  // Recupera tutte le aste attive di un utente loggato
+  Future<void> fetchUserActiveAuctions(String token) async {
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      final activeAuctions = await AuctionRequests().getUserActiveAuctions(token);
+      _activeUserAuctions = activeAuctions; // Aggiorna _activeUserAuctions con i risultati
+      print('Aste attive dell\'utente caricate: $_activeUserAuctions');
+    } catch (e) {
+      print('Errore nel caricamento delle aste attive dell\'utente: $e');
+    }
+
+    _isLoading = false;
+    notifyListeners();
+  }
 }
