@@ -16,6 +16,7 @@ import '../ui/views/account/seller/auctions/reverse_auction.dart';
 import '../ui/views/account/seller/auctions/silent_auction.dart';
 import '../ui/views/account/seller/sold.dart';
 import '../ui/views/account/seller/unsold.dart';
+import '../ui/views/account/seller/user_active_auctions.dart';
 import '../ui/views/account/settings/addresses.dart';
 import '../ui/views/account/settings/payment.dart';
 import '../ui/views/account/inbox/notifications.dart';
@@ -41,6 +42,7 @@ class AppRoutes {
   static const String addresses = '/addresses';
   static const String payments = '/payments';
   static const String notifications = '/notifications';
+  static const String userAuctions = '/user_auctions';
 
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
@@ -85,6 +87,8 @@ class AppRoutes {
           return MaterialPageRoute(builder: (_) => PaymentsPage());
       case notifications:
           return MaterialPageRoute(builder: (_) => NotificationsPage());
+      case userAuctions:
+          return MaterialPageRoute(builder: (_) => const UserActiveAuctionsPage());
       default:
         return MaterialPageRoute(
           builder: (_) => const Scaffold(
