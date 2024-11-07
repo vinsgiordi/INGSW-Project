@@ -1,3 +1,21 @@
-node_modules/
+# Dipendenze del progetto
+node_modules
+
+# File di log
+*.log
+
+# Dati di sistema
+.DS_Store
+Thumbs.db
+
+# Credenziali e variabili ambiente
 .env
+
+# Docker
+docker-compose.override.yml
+
+# Altri file
 query.txt
+
+# Vecchia configurazione al database
+config/db.js.old
