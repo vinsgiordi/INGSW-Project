@@ -1,10 +1,21 @@
+# IDE file
 .idea
+*.DS_Store
+
+# Build files
 build/
 
+# Frontend files
 frontend/.dart_tool
 frontend/android
 frontend/ios
 frontend/test
 frontend/.metadata
 
+# Backend files
+backend/config/db.js.old
+backend/Dockerfile
+backend/docker-compose.yml
+
+# Dump files
 db_dump/
