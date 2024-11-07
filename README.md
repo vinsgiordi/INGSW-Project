@@ -33,7 +33,7 @@ Before starting, ensure you have installed:
 ### 1. Clone the Repository
 
 ```bash
-git clone [https://github.com/vinsgiordi/INGSW-Project.git](https://github.com/vinsgiordi/INGSW-Project.git)
+git clone https://github.com/vinsgiordi/INGSW-Project.git
 cd INGSW-Project
 ```
 
