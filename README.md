@@ -1,8 +1,6 @@
 # INGSW-Project
 This repository contains an Android application, developed using Node.js / Express and Flutter, with the intention of creating a platform for managing online auctions. This application was developed as part of the "Software Engineering" course taught by professors Sergio Di Martino, Francesco Cutugno, and Luigi Libero Lucio Starace at the University of Naples "Federico II".
 
----
-
 ## Overview
 
 **DietiDeals24** is a real-time auction application designed to facilitate buying and selling between users through an auction system. Users can create listings, bid on products, receive real-time notifications, and complete transactions with various payment methods.
@@ -21,8 +19,6 @@ The app is built with a microservices architecture, separating the frontend (bui
 ### Frontend
 - **Flutter** for a native-like user interface across different platforms.
 
----
-
 ## Getting Started
 
 Before starting, ensure you have installed:
@@ -31,8 +27,6 @@ Before starting, ensure you have installed:
 2. **Flutter** (version 2.0 or higher) for the frontend
 3. **Docker and Docker Compose** to manage containers
 4. **DBeaver or pgAdmin** (optional, for database management)
-
----
 
 ## Installation Instructions
 
