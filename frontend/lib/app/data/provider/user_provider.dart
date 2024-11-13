@@ -66,7 +66,17 @@ class UserProvider with ChangeNotifier {
   // Funzione per la registrazione dell'utente
   Future<void> register(Map<String, dynamic> userData) async {
     try {
-      await UserRequests().register(userData);
+      // Chiamata alla funzione di registrazione
+      final response = await UserRequests().register(userData);
+
+      final user = response['user'];
+      final accessToken = response['accessToken'];
+
+      _user = User.fromJson(user);
+      _accessToken = accessToken;
+
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('accessToken', _accessToken!);
     } catch (e) {
       print('Error during registration: $e');
       rethrow;

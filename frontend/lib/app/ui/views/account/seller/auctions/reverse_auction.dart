@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
@@ -61,12 +63,20 @@ class _ReverseAuctionPageState extends State<ReverseAuctionPage> {
       }
 
       try {
+        // Converti l'immagine in base64 se presente
+        String? immagineBase64;
+        if (_images.isNotEmpty) {
+          final bytes = File(_images[0].path).readAsBytesSync();
+          immagineBase64 = base64Encode(bytes); // Converte in base64
+        }
+
         // Chiamata API per creare l'asta
-        await AuctionProvider().createAuction(token, auctionData, _images.isNotEmpty ? _images[0].path : null);
+        await AuctionProvider().createAuction(auctionData, immagineBase64);
+
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Asta al ribasso creata con successo!')),
         );
-        Navigator.of(context).pop();
+        Navigator.of(context).pop();  // Torna alla pagina precedente
       } catch (e) {
         print('Errore durante la creazione dell\'asta: $e');
         ScaffoldMessenger.of(context).showSnackBar(
