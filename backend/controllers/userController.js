@@ -6,6 +6,7 @@ const jwt = require('jsonwebtoken');
 // Creazione nuovo utente
 const userRegister = async (req, res) => {
     const { nome, cognome, data_nascita, email, password } = req.body;
+    console.log('Dati ricevuti:', req.body);
 
     try {
         if (!nome || !cognome || !data_nascita || !email || !password) {
@@ -51,8 +52,10 @@ const userRegister = async (req, res) => {
 // Login dell'utente
 const userLogin = async (req, res) => {
     const { email, password } = req.body;
+    console.log('Email: ', email);
     try {
         if (!email || !password) {
+            console.log('Missing email or password');
             return res.status(StatusCodes.BAD_REQUEST).json({
                 error: "Per favore inserisci sia l'email che la password!"
             });
@@ -60,14 +63,17 @@ const userLogin = async (req, res) => {
 
         // Trova l'utente tramite l'email
         const user = await User.findOne({ where: { email } });
+        console.log('User found: ', user);
 
         if (!user) {
+            console.log('User not found');
             return res.status(StatusCodes.NOT_FOUND).json({
                 error: "L'utente non esiste, controlla la tua email!"
             });
         }
 
         if (!user.password) {
+            console.log('User has no password');
             return res.status(StatusCodes.UNAUTHORIZED).json({
                 error: "Hai effettuato la registrazione con un social network. Per favore, imposta una password per accedere."
             });
@@ -75,7 +81,10 @@ const userLogin = async (req, res) => {
 
         // Verifica la password
         const isMatch = await bcrypt.compare(password, user.password);
+        console.log('Password match: ', isMatch);
+
         if (!isMatch) {
+            console.log('Paasowrd incorrect');
             return res.status(StatusCodes.UNAUTHORIZED).json({
                 error: "Password non corretta!"
             });
@@ -96,6 +105,7 @@ const userLogin = async (req, res) => {
         });
 
     } catch (error) {
+        console.error('Error during login:', error);  // Log per tracciare gli errori
         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: error.message });
     }
 };
