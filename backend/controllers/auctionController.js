@@ -9,6 +9,8 @@ const auctionService = require('../services/auctionServices');
 
 // Crea una nuova asta
 const createAuction = async (req, res) => {
+    console.log("Token ricevuto nel controller:", req.user);  // Verifica che l'utente sia stato correttamente autenticato
+
     const {
         tipo, data_scadenza, prezzo_minimo, incremento_rialzo, decremento_prezzo,
         prezzo_iniziale, stato, titolo, descrizione, categoria_id, immagine_principale, timer_decremento

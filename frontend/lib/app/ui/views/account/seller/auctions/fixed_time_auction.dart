@@ -123,11 +123,10 @@ class _FixedTimeAuctionPageState extends State<FixedTimeAuctionPage> {
       final token = await _storageService.getAccessToken();
 
       if (token != null) {
-        // Invia i dati tramite il provider
+        // Chiamata API tramite AuctionProvider con il token, i dati dell'asta e l'immagine
         await auctionProvider.createAuction(
-          token,  // Usa il token recuperato
-          auctionData,
-          immagineBase64, // Passa l'immagine se presente
+          auctionData,  // Passa l'oggetto auctionData
+          immagineBase64, // Passa l'immagine in base64 se presente
         );
 
         ScaffoldMessenger.of(context).showSnackBar(

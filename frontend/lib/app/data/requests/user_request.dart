@@ -4,7 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/user_model.dart';
 
 class UserRequests {
-  final String baseUrl = 'http://10.0.2.2:3000';
+  final String baseUrl = 'http://127.0.0.1:3000';
 
   // Funzione per ottenere i dati dell'utente
   Future<User> getUserData(String token) async {
@@ -32,6 +32,8 @@ class UserRequests {
       body: jsonEncode({'email': email, 'password': password}),
     );
 
+    print('Risposta del backend: ${response.body}');  // Aggiungi questo per il debug
+
     if (response.statusCode == 200) {
       final jsonResponse = json.decode(response.body);
       return {
@@ -45,14 +47,25 @@ class UserRequests {
   }
 
   // Funzione di registrazione
-  Future<void> register(Map<String, dynamic> userData) async {
+  Future<Map<String, dynamic>> register(Map<String, dynamic> userData) async {
     final response = await http.post(
       Uri.parse('$baseUrl/api/users/register'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode(userData),
     );
 
-    if (response.statusCode != 201) {
+    print('Risposta del backend: ${response.body}');  // Aggiungi questo per il debug
+
+    if (response.statusCode == 201) {
+      final jsonResponse = json.decode(response.body);
+      return {
+        'user': jsonResponse['user'],
+        'accessToken': jsonResponse['token'],
+      }; // Restituisce i dati necessari
+    } else if (response.statusCode == 400 || response.statusCode == 409) {
+      final jsonResponse = json.decode(response.body);
+      throw Exception(jsonResponse['error'] ?? 'Registration failed'); // Cattura l'errore specifico
+    } else {
       throw Exception('Registration failed');
     }
   }
@@ -98,6 +111,8 @@ class UserRequests {
         'newPassword': newPassword,
       }),
     );
+
+    print('Risposta del backend: ${response.body}');  // Aggiungi questo per il debug
 
     if (response.statusCode != 200) {
       throw Exception('Failed to reset password: ${response.body}');

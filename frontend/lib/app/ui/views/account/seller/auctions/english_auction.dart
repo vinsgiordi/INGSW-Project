@@ -78,9 +78,8 @@ class _EnglishAuctionPageState extends State<EnglishAuctionPage> {
 
         // Chiamata API tramite AuctionProvider
         await Provider.of<AuctionProvider>(context, listen: false).createAuction(
-          token,
-          auctionData,
-          _images.isNotEmpty ? _images[0].path : null,
+          auctionData,  // Pass the auctionData map
+          _images.isNotEmpty ? _images[0].path : null,  // Pass image if available
         );
 
         ScaffoldMessenger.of(context).showSnackBar(

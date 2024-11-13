@@ -3,20 +3,19 @@ import 'package:http/http.dart' as http;
 import '../models/auction_model.dart';
 
 class AuctionRequests {
-  final String baseUrl = 'http://10.0.2.2:3000'; // Sostituisci con l'URL del tuo server
+  final String baseUrl = 'http://127.0.0.1:3000'; // Sostituisci con l'URL del tuo server
 
   // Crea una nuova asta
   Future<http.Response> createAuction(String token, Map<String, dynamic> auctionData) async {
     final response = await http.post(
       Uri.parse('$baseUrl/api/auctions/create'),
       headers: {
-        'Authorization': 'Bearer $token',
+        'Authorization': 'Bearer $token', // Passa il token nell'header
         'Content-Type': 'application/json',
       },
       body: jsonEncode(auctionData),
     );
 
-    // Stampa dettagli della risposta in caso di errore
     if (response.statusCode != 201) {
       print('Errore durante la creazione dell\'asta: ${response.statusCode}, ${response.body}');
     }

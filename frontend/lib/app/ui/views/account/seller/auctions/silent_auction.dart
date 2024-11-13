@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
@@ -105,17 +107,24 @@ class _SilentAuctionPageState extends State<SilentAuctionPage> {
           'prezzo_iniziale': double.parse(_priceController.text),
         };
 
+        // Converte l'immagine in base64 se presente
+        String? immagineBase64;
+        if (_images.isNotEmpty) {
+          final bytes = File(_images[0].path).readAsBytesSync();
+          immagineBase64 = base64Encode(bytes); // Converte in base64
+        }
+
+        // Chiamata API tramite AuctionProvider
         await Provider.of<AuctionProvider>(context, listen: false).createAuction(
-          token,
           auctionData,
-          _images.isNotEmpty ? _images[0].path : null,
+          immagineBase64, // Passa l'immagine in base64
         );
 
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Asta silenziosa creata con successo!')),
         );
 
-        Navigator.pop(context);
+        Navigator.pop(context);  // Torna alla pagina precedente
       } catch (e) {
         print("Errore: $e");
         ScaffoldMessenger.of(context).showSnackBar(

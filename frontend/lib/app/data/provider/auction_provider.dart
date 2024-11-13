@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 import '../models/auction_model.dart';
+import '../models/user_model.dart';
 import '../requests/auction_request.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import '../requests/user_request.dart';
+
 
 class AuctionProvider with ChangeNotifier {
   List<Auction> _auctions = [];
@@ -10,6 +15,8 @@ class AuctionProvider with ChangeNotifier {
   List<Auction> _carouselAuctions = [];
   List<Auction> _unsoldAuctions = [];
   List<Auction> _activeUserAuctions = [];
+  String? _accessToken; // Per memorizzare l'access token
+  User? _user;
   bool _isUserSeller = false;
   bool _isLoading = false;
 
@@ -20,6 +27,7 @@ class AuctionProvider with ChangeNotifier {
   List<Auction> get carouselAuctions => _carouselAuctions;
   List<Auction> get unsoldAuctions => _unsoldAuctions;
   List<Auction> get activeUserAuctions => _activeUserAuctions;
+  User? get user => _user;
   bool get IsUserSeller => _isUserSeller;
   bool get isLoading => _isLoading;
 
@@ -142,40 +150,36 @@ class AuctionProvider with ChangeNotifier {
   }
 
   // Crea una nuova asta
-  Future<void> createAuction(String token, Map<String, dynamic> auctionData, String? immaginePrincipale) async {
+  Future<void> createAuction(Map<String, dynamic> auctionData, String? immaginePrincipale) async {
     try {
-      // Stampa la data corrente del device
+      // Verifica che il token non sia vuoto
+      final prefs = await SharedPreferences.getInstance();
+      String? token = prefs.getString('accessToken');
+
+      if (token == null || token.isEmpty) {
+        throw Exception('Token mancante o non valido');
+      }
+
       DateTime now = DateTime.now();
-      print('Data corrente del device: $now');
 
       // Aggiungi la data di scadenza se non è stata fornita
       if (!auctionData.containsKey('data_scadenza')) {
         auctionData['data_scadenza'] = now.add(Duration(hours: 1)).toIso8601String();  // 1 ora da adesso
       } else {
-        // Se la data è stata fornita, lasciala così com'è (senza conversione a UTC)
         DateTime parsedDate = DateTime.parse(auctionData['data_scadenza']);
         auctionData['data_scadenza'] = parsedDate.toIso8601String();
       }
 
-      // Stampa la data di scadenza inviata al backend
-      print('Data di scadenza inviata al backend: ${auctionData['data_scadenza']}');
-
-      // Aggiungi un log per vedere i dati prima di inviarli
-      print('Dati prima dell\'invio: $auctionData, immagine: $immaginePrincipale');
-
-      // Controlla se l'immagine è null, altrimenti rimuovi il campo
+      // Aggiungi l'immagine se presente
       Map<String, dynamic> newAuctionData = {
         ...auctionData,
         if (immaginePrincipale != null) 'immagine_principale': immaginePrincipale,
       };
 
-      print('Dati finali inviati al backend: $newAuctionData');
-
-      // Effettua la richiesta di creazione dell'asta
+      // Passa il token corretto alla richiesta
       final response = await AuctionRequests().createAuction(token, newAuctionData);
 
       if (response.statusCode != 201) {
-        print('Errore dal server: ${response.statusCode}, ${response.body}');
         throw Exception('Errore nella creazione dell\'asta: ${response.body}');
       }
 
