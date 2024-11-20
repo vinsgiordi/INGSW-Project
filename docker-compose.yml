@@ -13,6 +13,7 @@ services:
   backend:
     build: .
     image: node:14
+    image: node:14
     environment:
       PG_HOST: db
       PG_USER: ${PG_USER}
@@ -40,6 +41,9 @@ services:
       - "3000:3000"
     depends_on:
       - db
+    volumes:
+      - ./files/images/product:/app/files/images/product
+      - ./files/images/user:/app/files/images/user
     volumes:
       - ./files/images/product:/app/files/images/product
       - ./files/images/user:/app/files/images/user

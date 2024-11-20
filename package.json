@@ -6,6 +6,9 @@
     "start": "node app.js",
     "populate-images": "node utils/uploadImages.js",
     "populate-avatars": "node utils/uploadAvatar.js"
+    "start": "node app.js",
+    "populate-images": "node utils/uploadImages.js",
+    "populate-avatars": "node utils/uploadAvatar.js"
   },
   "keywords": [],
   "author": "Giordano Vincenzo",
@@ -24,6 +27,7 @@
     "http-status-codes": "^2.3.0",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.5.3",
+    "multer": "^1.4.5-lts.1",
     "multer": "^1.4.5-lts.1",
     "node-cron": "^3.0.3",
     "node-fetch": "^2.7.0",

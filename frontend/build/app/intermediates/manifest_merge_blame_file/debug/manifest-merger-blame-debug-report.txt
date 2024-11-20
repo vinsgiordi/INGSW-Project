@@ -1,0 +1,197 @@
+1<?xml version="1.0" encoding="utf-8"?>
+2<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+3    package="com.example.bid_hub"
+4    android:versionCode="1"
+5    android:versionName="1.0.0" >
+6
+7    <uses-sdk
+8        android:minSdkVersion="21"
+9        android:targetSdkVersion="34" />
+10    <!--
+11         The INTERNET permission is required for development. Specifically,
+12         the Flutter tool needs it to communicate with the running application
+13         to allow setting breakpoints, to provide hot reload, etc.
+14    -->
+15    <uses-permission android:name="android.permission.INTERNET" />
+15-->C:\Users\V.Giordano\AndroidStudioProjects\IngegneriaDelSoftware\FlutterBidHub\frontend\android\app\src\debug\AndroidManifest.xml:6:5-66
+15-->C:\Users\V.Giordano\AndroidStudioProjects\IngegneriaDelSoftware\FlutterBidHub\frontend\android\app\src\debug\AndroidManifest.xml:6:22-64
+16
+17    <permission
+17-->[androidx.core:core:1.13.1] C:\Users\V.Giordano\.gradle\caches\transforms-3\54a4cfbaad86b9ab2273ca8263e4a153\transformed\core-1.13.1\AndroidManifest.xml:22:5-24:47
+18        android:name="com.example.bid_hub.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
+18-->[androidx.core:core:1.13.1] C:\Users\V.Giordano\.gradle\caches\transforms-3\54a4cfbaad86b9ab2273ca8263e4a153\transformed\core-1.13.1\AndroidManifest.xml:23:9-81
+19        android:protectionLevel="signature" />
+19-->[androidx.core:core:1.13.1] C:\Users\V.Giordano\.gradle\caches\transforms-3\54a4cfbaad86b9ab2273ca8263e4a153\transformed\core-1.13.1\AndroidManifest.xml:24:9-44
+20
+21    <uses-permission android:name="com.example.bid_hub.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION" />
+21-->[androidx.core:core:1.13.1] C:\Users\V.Giordano\.gradle\caches\transforms-3\54a4cfbaad86b9ab2273ca8263e4a153\transformed\core-1.13.1\AndroidManifest.xml:26:5-97
+21-->[androidx.core:core:1.13.1] C:\Users\V.Giordano\.gradle\caches\transforms-3\54a4cfbaad86b9ab2273ca8263e4a153\transformed\core-1.13.1\AndroidManifest.xml:26:22-94
+22
+23    <application
+24        android:name="android.app.Application"
+25        android:appComponentFactory="androidx.core.app.CoreComponentFactory"
+25-->[androidx.core:core:1.13.1] C:\Users\V.Giordano\.gradle\caches\transforms-3\54a4cfbaad86b9ab2273ca8263e4a153\transformed\core-1.13.1\AndroidManifest.xml:28:18-86
+26        android:debuggable="true"
+27        android:icon="@mipmap/ic_launcher"
+28        android:label="bid_hub" >
+29
+30        <!-- Aggiungi questa activity per gestire il callback -->
+31        <activity
+32            android:name="com.linusu.flutter_web_auth.CallbackActivity"
+33            android:exported="true" >
+34            <intent-filter android:label="flutter_web_auth" >
+35                <action android:name="android.intent.action.VIEW" />
+36
+37                <category android:name="android.intent.category.DEFAULT" />
+38                <category android:name="android.intent.category.BROWSABLE" />
+39
+40                <data android:scheme="bidhub" />
+41            </intent-filter>
+42        </activity>
+43
+44        <!-- La tua activity principale -->
+45        <activity
+46            android:name="com.example.bid_hub.MainActivity"
+47            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
+48            android:exported="true"
+49            android:hardwareAccelerated="true"
+50            android:launchMode="singleTop"
+51            android:taskAffinity=""
+52            android:theme="@style/LaunchTheme"
+53            android:windowSoftInputMode="adjustResize" >
+54            <intent-filter>
+55                <action android:name="android.intent.action.MAIN" />
+56
+57                <category android:name="android.intent.category.LAUNCHER" />
+58            </intent-filter>
+59        </activity>
+60
+61        <!-- Flutter Generated Plugin Registrant -->
+62        <meta-data
+63            android:name="flutterEmbedding"
+64            android:value="2" />
+65
+66        <provider
+66-->[:image_picker_android] C:\Users\V.Giordano\AndroidStudioProjects\IngegneriaDelSoftware\FlutterBidHub\frontend\build\image_picker_android\intermediates\merged_manifest\debug\AndroidManifest.xml:11:9-19:20
+67            android:name="io.flutter.plugins.imagepicker.ImagePickerFileProvider"
+67-->[:image_picker_android] C:\Users\V.Giordano\AndroidStudioProjects\IngegneriaDelSoftware\FlutterBidHub\frontend\build\image_picker_android\intermediates\merged_manifest\debug\AndroidManifest.xml:12:13-82
+68            android:authorities="com.example.bid_hub.flutter.image_provider"
+68-->[:image_picker_android] C:\Users\V.Giordano\AndroidStudioProjects\IngegneriaDelSoftware\FlutterBidHub\frontend\build\image_picker_android\intermediates\merged_manifest\debug\AndroidManifest.xml:13:13-74
+69            android:exported="false"
+69-->[:image_picker_android] C:\Users\V.Giordano\AndroidStudioProjects\IngegneriaDelSoftware\FlutterBidHub\frontend\build\image_picker_android\intermediates\merged_manifest\debug\AndroidManifest.xml:14:13-37
+70            android:grantUriPermissions="true" >
+70-->[:image_picker_android] C:\Users\V.Giordano\AndroidStudioProjects\IngegneriaDelSoftware\FlutterBidHub\frontend\build\image_picker_android\intermediates\merged_manifest\debug\AndroidManifest.xml:15:13-47
+71            <meta-data
+71-->[:image_picker_android] C:\Users\V.Giordano\AndroidStudioProjects\IngegneriaDelSoftware\FlutterBidHub\frontend\build\image_picker_android\intermediates\merged_manifest\debug\AndroidManifest.xml:16:13-18:75
+72                android:name="android.support.FILE_PROVIDER_PATHS"
+72-->[:image_picker_android] C:\Users\V.Giordano\AndroidStudioProjects\IngegneriaDelSoftware\FlutterBidHub\frontend\build\image_picker_android\intermediates\merged_manifest\debug\AndroidManifest.xml:17:17-67
+73                android:resource="@xml/flutter_image_picker_file_paths" />
+73-->[:image_picker_android] C:\Users\V.Giordano\AndroidStudioProjects\IngegneriaDelSoftware\FlutterBidHub\frontend\build\image_picker_android\intermediates\merged_manifest\debug\AndroidManifest.xml:18:17-72
+74        </provider> <!-- Trigger Google Play services to install the backported photo picker module. -->
+75        <service
+75-->[:image_picker_android] C:\Users\V.Giordano\AndroidStudioProjects\IngegneriaDelSoftware\FlutterBidHub\frontend\build\image_picker_android\intermediates\merged_manifest\debug\AndroidManifest.xml:21:9-33:19
+76            android:name="com.google.android.gms.metadata.ModuleDependencies"
+76-->[:image_picker_android] C:\Users\V.Giordano\AndroidStudioProjects\IngegneriaDelSoftware\FlutterBidHub\frontend\build\image_picker_android\intermediates\merged_manifest\debug\AndroidManifest.xml:22:13-78
+77            android:enabled="false"
+77-->[:image_picker_android] C:\Users\V.Giordano\AndroidStudioProjects\IngegneriaDelSoftware\FlutterBidHub\frontend\build\image_picker_android\intermediates\merged_manifest\debug\AndroidManifest.xml:23:13-36
+78            android:exported="false" >
+78-->[:image_picker_android] C:\Users\V.Giordano\AndroidStudioProjects\IngegneriaDelSoftware\FlutterBidHub\frontend\build\image_picker_android\intermediates\merged_manifest\debug\AndroidManifest.xml:24:13-37
+79            <intent-filter>
+79-->[:image_picker_android] C:\Users\V.Giordano\AndroidStudioProjects\IngegneriaDelSoftware\FlutterBidHub\frontend\build\image_picker_android\intermediates\merged_manifest\debug\AndroidManifest.xml:26:13-28:29
+80                <action android:name="com.google.android.gms.metadata.MODULE_DEPENDENCIES" />
+80-->[:image_picker_android] C:\Users\V.Giordano\AndroidStudioProjects\IngegneriaDelSoftware\FlutterBidHub\frontend\build\image_picker_android\intermediates\merged_manifest\debug\AndroidManifest.xml:27:17-94
+80-->[:image_picker_android] C:\Users\V.Giordano\AndroidStudioProjects\IngegneriaDelSoftware\FlutterBidHub\frontend\build\image_picker_android\intermediates\merged_manifest\debug\AndroidManifest.xml:27:25-91
+81            </intent-filter>
+82
+83            <meta-data
+83-->[:image_picker_android] C:\Users\V.Giordano\AndroidStudioProjects\IngegneriaDelSoftware\FlutterBidHub\frontend\build\image_picker_android\intermediates\merged_manifest\debug\AndroidManifest.xml:30:13-32:36
+84                android:name="photopicker_activity:0:required"
+84-->[:image_picker_android] C:\Users\V.Giordano\AndroidStudioProjects\IngegneriaDelSoftware\FlutterBidHub\frontend\build\image_picker_android\intermediates\merged_manifest\debug\AndroidManifest.xml:31:17-63
+85                android:value="" />
+85-->[:image_picker_android] C:\Users\V.Giordano\AndroidStudioProjects\IngegneriaDelSoftware\FlutterBidHub\frontend\build\image_picker_android\intermediates\merged_manifest\debug\AndroidManifest.xml:32:17-33
+86        </service>
+87
+88        <activity
+88-->[:url_launcher_android] C:\Users\V.Giordano\AndroidStudioProjects\IngegneriaDelSoftware\FlutterBidHub\frontend\build\url_launcher_android\intermediates\merged_manifest\debug\AndroidManifest.xml:10:9-13:74
+89            android:name="io.flutter.plugins.urllauncher.WebViewActivity"
+89-->[:url_launcher_android] C:\Users\V.Giordano\AndroidStudioProjects\IngegneriaDelSoftware\FlutterBidHub\frontend\build\url_launcher_android\intermediates\merged_manifest\debug\AndroidManifest.xml:11:13-74
+90            android:exported="false"
+90-->[:url_launcher_android] C:\Users\V.Giordano\AndroidStudioProjects\IngegneriaDelSoftware\FlutterBidHub\frontend\build\url_launcher_android\intermediates\merged_manifest\debug\AndroidManifest.xml:12:13-37
+91            android:theme="@android:style/Theme.NoTitleBar.Fullscreen" />
+91-->[:url_launcher_android] C:\Users\V.Giordano\AndroidStudioProjects\IngegneriaDelSoftware\FlutterBidHub\frontend\build\url_launcher_android\intermediates\merged_manifest\debug\AndroidManifest.xml:13:13-71
+92
+93        <uses-library
+93-->[androidx.window:window:1.2.0] C:\Users\V.Giordano\.gradle\caches\transforms-3\ac5ea9a8b6fd31385d98c2d53414b07d\transformed\jetified-window-1.2.0\AndroidManifest.xml:23:9-25:40
+94            android:name="androidx.window.extensions"
+94-->[androidx.window:window:1.2.0] C:\Users\V.Giordano\.gradle\caches\transforms-3\ac5ea9a8b6fd31385d98c2d53414b07d\transformed\jetified-window-1.2.0\AndroidManifest.xml:24:13-54
+95            android:required="false" />
+95-->[androidx.window:window:1.2.0] C:\Users\V.Giordano\.gradle\caches\transforms-3\ac5ea9a8b6fd31385d98c2d53414b07d\transformed\jetified-window-1.2.0\AndroidManifest.xml:25:13-37
+96        <uses-library
+96-->[androidx.window:window:1.2.0] C:\Users\V.Giordano\.gradle\caches\transforms-3\ac5ea9a8b6fd31385d98c2d53414b07d\transformed\jetified-window-1.2.0\AndroidManifest.xml:26:9-28:40
+97            android:name="androidx.window.sidecar"
+97-->[androidx.window:window:1.2.0] C:\Users\V.Giordano\.gradle\caches\transforms-3\ac5ea9a8b6fd31385d98c2d53414b07d\transformed\jetified-window-1.2.0\AndroidManifest.xml:27:13-51
+98            android:required="false" />
+98-->[androidx.window:window:1.2.0] C:\Users\V.Giordano\.gradle\caches\transforms-3\ac5ea9a8b6fd31385d98c2d53414b07d\transformed\jetified-window-1.2.0\AndroidManifest.xml:28:13-37
+99
+100        <provider
+100-->[androidx.lifecycle:lifecycle-process:2.7.0] C:\Users\V.Giordano\.gradle\caches\transforms-3\f278e58515e8cfd3d9ddee03ef955ede\transformed\jetified-lifecycle-process-2.7.0\AndroidManifest.xml:24:9-32:20
+101            android:name="androidx.startup.InitializationProvider"
+101-->[androidx.lifecycle:lifecycle-process:2.7.0] C:\Users\V.Giordano\.gradle\caches\transforms-3\f278e58515e8cfd3d9ddee03ef955ede\transformed\jetified-lifecycle-process-2.7.0\AndroidManifest.xml:25:13-67
+102            android:authorities="com.example.bid_hub.androidx-startup"
+102-->[androidx.lifecycle:lifecycle-process:2.7.0] C:\Users\V.Giordano\.gradle\caches\transforms-3\f278e58515e8cfd3d9ddee03ef955ede\transformed\jetified-lifecycle-process-2.7.0\AndroidManifest.xml:26:13-68
+103            android:exported="false" >
+103-->[androidx.lifecycle:lifecycle-process:2.7.0] C:\Users\V.Giordano\.gradle\caches\transforms-3\f278e58515e8cfd3d9ddee03ef955ede\transformed\jetified-lifecycle-process-2.7.0\AndroidManifest.xml:27:13-37
+104            <meta-data
+104-->[androidx.lifecycle:lifecycle-process:2.7.0] C:\Users\V.Giordano\.gradle\caches\transforms-3\f278e58515e8cfd3d9ddee03ef955ede\transformed\jetified-lifecycle-process-2.7.0\AndroidManifest.xml:29:13-31:52
+105                android:name="androidx.lifecycle.ProcessLifecycleInitializer"
+105-->[androidx.lifecycle:lifecycle-process:2.7.0] C:\Users\V.Giordano\.gradle\caches\transforms-3\f278e58515e8cfd3d9ddee03ef955ede\transformed\jetified-lifecycle-process-2.7.0\AndroidManifest.xml:30:17-78
+106                android:value="androidx.startup" />
+106-->[androidx.lifecycle:lifecycle-process:2.7.0] C:\Users\V.Giordano\.gradle\caches\transforms-3\f278e58515e8cfd3d9ddee03ef955ede\transformed\jetified-lifecycle-process-2.7.0\AndroidManifest.xml:31:17-49
+107            <meta-data
+107-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\V.Giordano\.gradle\caches\transforms-3\6ea3fe485a2777491d24973851e37227\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:29:13-31:52
+108                android:name="androidx.profileinstaller.ProfileInstallerInitializer"
+108-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\V.Giordano\.gradle\caches\transforms-3\6ea3fe485a2777491d24973851e37227\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:30:17-85
+109                android:value="androidx.startup" />
+109-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\V.Giordano\.gradle\caches\transforms-3\6ea3fe485a2777491d24973851e37227\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:31:17-49
+110        </provider>
+111
+112        <receiver
+112-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\V.Giordano\.gradle\caches\transforms-3\6ea3fe485a2777491d24973851e37227\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:34:9-52:20
+113            android:name="androidx.profileinstaller.ProfileInstallReceiver"
+113-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\V.Giordano\.gradle\caches\transforms-3\6ea3fe485a2777491d24973851e37227\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:35:13-76
+114            android:directBootAware="false"
+114-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\V.Giordano\.gradle\caches\transforms-3\6ea3fe485a2777491d24973851e37227\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:36:13-44
+115            android:enabled="true"
+115-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\V.Giordano\.gradle\caches\transforms-3\6ea3fe485a2777491d24973851e37227\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:37:13-35
+116            android:exported="true"
+116-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\V.Giordano\.gradle\caches\transforms-3\6ea3fe485a2777491d24973851e37227\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:38:13-36
+117            android:permission="android.permission.DUMP" >
+117-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\V.Giordano\.gradle\caches\transforms-3\6ea3fe485a2777491d24973851e37227\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:39:13-57
+118            <intent-filter>
+118-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\V.Giordano\.gradle\caches\transforms-3\6ea3fe485a2777491d24973851e37227\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:40:13-42:29
+119                <action android:name="androidx.profileinstaller.action.INSTALL_PROFILE" />
+119-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\V.Giordano\.gradle\caches\transforms-3\6ea3fe485a2777491d24973851e37227\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:41:17-91
+119-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\V.Giordano\.gradle\caches\transforms-3\6ea3fe485a2777491d24973851e37227\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:41:25-88
+120            </intent-filter>
+121            <intent-filter>
+121-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\V.Giordano\.gradle\caches\transforms-3\6ea3fe485a2777491d24973851e37227\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:43:13-45:29
+122                <action android:name="androidx.profileinstaller.action.SKIP_FILE" />
+122-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\V.Giordano\.gradle\caches\transforms-3\6ea3fe485a2777491d24973851e37227\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:44:17-85
+122-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\V.Giordano\.gradle\caches\transforms-3\6ea3fe485a2777491d24973851e37227\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:44:25-82
+123            </intent-filter>
+124            <intent-filter>
+124-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\V.Giordano\.gradle\caches\transforms-3\6ea3fe485a2777491d24973851e37227\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:46:13-48:29
+125                <action android:name="androidx.profileinstaller.action.SAVE_PROFILE" />
+125-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\V.Giordano\.gradle\caches\transforms-3\6ea3fe485a2777491d24973851e37227\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:47:17-88
+125-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\V.Giordano\.gradle\caches\transforms-3\6ea3fe485a2777491d24973851e37227\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:47:25-85
+126            </intent-filter>
+127            <intent-filter>
+127-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\V.Giordano\.gradle\caches\transforms-3\6ea3fe485a2777491d24973851e37227\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:49:13-51:29
+128                <action android:name="androidx.profileinstaller.action.BENCHMARK_OPERATION" />
+128-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\V.Giordano\.gradle\caches\transforms-3\6ea3fe485a2777491d24973851e37227\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:50:17-95
+128-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\V.Giordano\.gradle\caches\transforms-3\6ea3fe485a2777491d24973851e37227\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:50:25-92
+129            </intent-filter>
+130        </receiver>
+131    </application>
+132
+133</manifest>

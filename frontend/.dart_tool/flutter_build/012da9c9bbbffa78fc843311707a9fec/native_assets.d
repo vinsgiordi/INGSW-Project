@@ -1,0 +1,1 @@
+ C:\\Users\\V.Giordano\\AndroidStudioProjects\\IngegneriaDelSoftware\\FlutterBidHub\\frontend\\.dart_tool\\flutter_build\\012da9c9bbbffa78fc843311707a9fec\\native_assets.yaml: 
