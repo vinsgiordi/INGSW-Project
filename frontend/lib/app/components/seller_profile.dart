@@ -61,11 +61,13 @@ class _SellerProfilePageState extends State<SellerProfilePage> {
             children: [
               Center(
                 child: CircleAvatar(
-                  radius: 50,
+                  radius: 60,
                   backgroundImage: sellerProvider.seller?.avatar != null
-                      ? NetworkImage(sellerProvider.seller!.avatar!)
-                      : const AssetImage('images/user_avatar.png')
-                  as ImageProvider,
+                      ? isBase64(sellerProvider.seller!.avatar!)
+                      ? MemoryImage(base64Decode(sellerProvider.seller!.avatar!))
+                      : NetworkImage(sellerProvider.seller!.avatar!)
+                      : const AssetImage('images/user_avatar.png') as ImageProvider,
+
                 ),
               ),
               const SizedBox(height: 16.0),

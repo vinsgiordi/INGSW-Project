@@ -230,6 +230,12 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     return canBid;
   }
 
+  bool isBase64(String value) {
+    final base64Regex = RegExp(r'^[A-Za-z0-9+/]+={0,2}$');
+    return value.length % 4 == 0 && base64Regex.hasMatch(value);
+  }
+
+
   @override
   Widget build(BuildContext context) {
     final sellerProvider = Provider.of<SellerProvider>(context);
@@ -420,8 +426,11 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                   ? const Center(child: CircularProgressIndicator())
                   : ListTile(
                 leading: CircleAvatar(
+                  radius: 30,
                   backgroundImage: seller.avatar != null
-                      ? NetworkImage(seller.avatar!)
+                      ? isBase64(seller.avatar!)
+                      ? MemoryImage(base64Decode(seller.avatar!))
+                      : NetworkImage(seller.avatar!)
                       : const AssetImage('images/user_avatar.png') as ImageProvider,
                 ),
                 title: Text(seller.nome),

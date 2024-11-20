@@ -63,21 +63,10 @@ class _UnsoldPageState extends State<UnsoldPage> {
         ),
       )
           : unsoldAuctions.isEmpty
-          ? Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Image.asset(
-              'images/donna_che_ordina.jpg',
-              height: 190,
-              fit: BoxFit.contain,
-            ),
-            const SizedBox(height: 20),
-            const Text(
-              'Ancora nessun prodotto non venduto.',
-              style: TextStyle(fontSize: 18),
-            ),
-          ],
+          ? const Center(
+        child: Text(
+          'Ancora nessun prodotto non venduto.',
+          style: TextStyle(fontSize: 18),
         ),
       )
           : ListView.builder(
