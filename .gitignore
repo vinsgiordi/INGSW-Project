@@ -1,21 +1,21 @@
-# IDE file
-.idea
-*.DS_Store
+# Dipendenze del progetto
+node_modules
 
-# Build files
-build/
+# File di log
+*.log
 
-# Frontend files
-frontend/.dart_tool
-frontend/android
-frontend/ios
-frontend/test
-frontend/.metadata
+# Dati di sistema
+.DS_Store
+Thumbs.db
 
-# Backend files
-backend/config/db.js.old
-backend/Dockerfile
-backend/docker-compose.yml
+# Credenziali e variabili ambiente
+.env
 
-# Dump files
-db_dump/
+# Docker
+docker-compose.override.yml
+
+# Altri file
+query.txt
+
+# Vecchia configurazione al database
+config/db.js.old

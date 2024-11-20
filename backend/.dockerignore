@@ -1,8 +1,0 @@
-# Ignora i file e le cartelle inutili
-node_modules
-.git
-.gitignore
-.dockerignore
-Dockerfile
-.env
-*.log
