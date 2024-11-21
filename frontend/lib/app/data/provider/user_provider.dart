@@ -54,6 +54,7 @@ class UserProvider with ChangeNotifier {
 
     try {
       _user = await UserRequests().getUserData(token);
+      print('User data fetched: ${_user?.toJson()}');
     } catch (e) {
       print('Error fetching user data: $e');
       rethrow;
@@ -130,6 +131,7 @@ class UserProvider with ChangeNotifier {
 
     try {
       _user = await UserRequests().getUserData(token);
+      print('User data fetched: ${_user?.toJson()}');
     } catch (e) {
       print('Error fetching user data: $e');
       rethrow;

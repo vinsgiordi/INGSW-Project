@@ -1,3 +1,4 @@
+import 'dart:convert'; // Per la gestione delle immagini in formato Base64
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../../services/storage_service.dart';
@@ -14,6 +15,8 @@ class UserActiveAuctionsPage extends StatefulWidget {
 
 class _UserActiveAuctionsPageState extends State<UserActiveAuctionsPage> {
   final StorageService _storageService = StorageService();
+  bool isLoading = true;
+  bool isError = false;
 
   @override
   void initState() {
@@ -22,14 +25,32 @@ class _UserActiveAuctionsPageState extends State<UserActiveAuctionsPage> {
   }
 
   Future<void> _fetchUserActiveAuctions() async {
-    final token = await _storageService.getAccessToken();
-    if (token != null) {
-      await Provider.of<AuctionProvider>(context, listen: false).fetchUserActiveAuctions(token);
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Token mancante, per favore effettua il login.')),
-      );
+    try {
+      final token = await _storageService.getAccessToken();
+      if (token != null) {
+        await Provider.of<AuctionProvider>(context, listen: false)
+            .fetchUserActiveAuctions(token);
+      } else {
+        _showSnackbar('Token mancante, per favore effettua il login.');
+        setState(() => isError = true);
+      }
+    } catch (e) {
+      print('Errore durante il caricamento delle aste attive: $e');
+      setState(() => isError = true);
+    } finally {
+      setState(() => isLoading = false);
     }
+  }
+
+  void _showSnackbar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
+  }
+
+  bool isBase64(String value) {
+    final base64Regex = RegExp(r'^[A-Za-z0-9+/]+={0,2}$');
+    return value.length % 4 == 0 && base64Regex.hasMatch(value);
   }
 
   @override
@@ -41,8 +62,15 @@ class _UserActiveAuctionsPageState extends State<UserActiveAuctionsPage> {
       appBar: AppBar(
         title: const Text('Le tue Aste Attive'),
       ),
-      body: auctionProvider.isLoading
+      body: isLoading
           ? const Center(child: CircularProgressIndicator())
+          : isError
+          ? const Center(
+        child: Text(
+          'Errore durante il caricamento delle aste attive.',
+          style: TextStyle(fontSize: 18, color: Colors.red),
+        ),
+      )
           : activeAuctions.isEmpty
           ? const Center(
         child: Text(
@@ -56,87 +84,106 @@ class _UserActiveAuctionsPageState extends State<UserActiveAuctionsPage> {
           itemCount: activeAuctions.length,
           itemBuilder: (context, index) {
             final auction = activeAuctions[index];
-            return Card(
-              elevation: 5,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(15),
+            return _buildAuctionCard(auction);
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAuctionCard(Auction auction) {
+    final imageWidget = auction.productImage != null
+        ? isBase64(auction.productImage!)
+        ? Image.memory(
+      base64Decode(auction.productImage!),
+      fit: BoxFit.cover,
+      width: 60,
+      height: 60,
+    )
+        : Image.network(
+      auction.productImage!,
+      fit: BoxFit.cover,
+      width: 60,
+      height: 60,
+    )
+        : Icon(
+      Icons.image,
+      size: 40,
+      color: Colors.grey[600],
+    );
+
+    return Card(
+      elevation: 5,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(15),
+      ),
+      margin: const EdgeInsets.symmetric(vertical: 10),
+      child: InkWell(
+        onTap: () => _openProductDetail(context, auction.id),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              CircleAvatar(
+                radius: 30,
+                backgroundColor: Colors.grey[300],
+                child: imageWidget,
               ),
-              margin: const EdgeInsets.symmetric(vertical: 10),
-              child: InkWell(
-                onTap: () => _openProductDetail(context, auction.id),
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      CircleAvatar(
-                        radius: 30,
-                        backgroundColor: Colors.grey[300],
-                        backgroundImage: auction.productImage != null
-                            ? NetworkImage(auction.productImage!)
-                            : null,
-                        child: auction.productImage == null
-                            ? Icon(Icons.image, size: 40, color: Colors.grey[600])
-                            : null,
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      auction.productName ?? 'Prodotto',
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
                       ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              auction.productName ?? 'Prodotto',
-                              style: const TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              auction.productDescription != null
-                                  ? auction.productDescription!.length > 30
-                                  ? '${auction.productDescription!.substring(0, 30)}...'
-                                  : auction.productDescription!
-                                  : 'Descrizione non disponibile',
-                              style: const TextStyle(
-                                fontSize: 16,
-                                color: Colors.black54,
-                              ),
-                            ),
-                            const SizedBox(height: 16),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                const Text(
-                                  'Prezzo Iniziale:',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                Text(
-                                  '${auction.prezzoIniziale.toStringAsFixed(2)}€',
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.green,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      auction.productDescription != null
+                          ? auction.productDescription!.length > 30
+                          ? '${auction.productDescription!.substring(0, 30)}...'
+                          : auction.productDescription!
+                          : 'Descrizione non disponibile',
+                      style: const TextStyle(
+                        fontSize: 16,
+                        color: Colors.black54,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'Prezzo Iniziale:',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.delete, color: Colors.red),
-                        onPressed: () => _deleteAuction(auction),
-                      ),
-                    ],
-                  ),
+                        Text(
+                          '${auction.prezzoIniziale.toStringAsFixed(2)}€',
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.green,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
               ),
-            );
-          },
+              IconButton(
+                icon: const Icon(Icons.delete, color: Colors.red),
+                onPressed: () => _deleteAuction(auction),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -154,22 +201,20 @@ class _UserActiveAuctionsPageState extends State<UserActiveAuctionsPage> {
   Future<void> _deleteAuction(Auction auction) async {
     final token = await _storageService.getAccessToken();
     if (token != null) {
-      final deleted = await Provider.of<AuctionProvider>(context, listen: false).deleteAuction(token, auction.id);
-      if (deleted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Asta eliminata con successo')),
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Errore durante l\'eliminazione dell\'asta')),
-        );
+      try {
+        final deleted = await Provider.of<AuctionProvider>(context, listen: false)
+            .deleteAuction(token, auction.id);
+        if (deleted) {
+          _showSnackbar('Asta eliminata con successo');
+        } else {
+          _showSnackbar('Errore durante l\'eliminazione dell\'asta');
+        }
+      } catch (e) {
+        print('Errore durante l\'eliminazione dell\'asta: $e');
+        _showSnackbar('Errore durante l\'eliminazione dell\'asta');
       }
     } else {
-      // Messaggio se il token è mancante durante l'eliminazione
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Token mancante, per favore effettua il login.')),
-      );
+      _showSnackbar('Token mancante, per favore effettua il login.');
     }
   }
-
 }

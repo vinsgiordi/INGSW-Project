@@ -39,7 +39,7 @@ void main() {
       expect(userProvider.user?.email, email);
 
       // Recupera l'access token da SharedPreferences
-      final accessToken = await mockPrefs.getString('accessToken');
+      final accessToken = mockPrefs.getString('accessToken');
 
       // Assicurati che l'access token non sia null
       expect(accessToken, 'dummyAccessToken');
@@ -48,7 +48,7 @@ void main() {
     // Test di registrazione con dati validi (email statica)
     test('Registrazione utente con dati validi', () async {
       final userProvider = UserProvider();
-      final email = 'testuser@example.com';
+      const email = 'testuser@example.com';
 
       // Crea un mock di SharedPreferences
       final mockPrefs = MockSharedPreferences();
@@ -72,7 +72,7 @@ void main() {
       expect(userProvider.user?.email, email);
 
       // Recupera l'access token da SharedPreferences
-      final accessToken = await mockPrefs.getString('accessToken');
+      final accessToken = mockPrefs.getString('accessToken');
 
       // Assicurati che l'access token non sia null
       expect(accessToken, 'dummyAccessToken');
@@ -81,7 +81,7 @@ void main() {
     // Test di registrazione con dati validi per creazione dell'asta
     test('Registrazione utente con dati validi per creazione dell\'asta', () async {
       final userProvider = UserProvider();
-      final email = 'test_auction@example.com';
+      const email = 'test_auction@example.com';
 
       // Crea un mock di SharedPreferences
       final mockPrefs = MockSharedPreferences();
@@ -105,7 +105,7 @@ void main() {
       expect(userProvider.user?.email, email);
 
       // Recupera l'access token da SharedPreferences
-      final accessToken = await mockPrefs.getString('accessToken');
+      final accessToken = mockPrefs.getString('accessToken');
 
       // Assicurati che l'access token non sia null
       expect(accessToken, 'dummyAccessToken');
@@ -157,8 +157,8 @@ void main() {
     // Test di login con credenziali corrette
     test('Login con credenziali corrette', () async {
       final userProvider = UserProvider();
-      final email = 'testuser@example.com';
-      final password = 'password123';
+      const email = 'testuser@example.com';
+      const password = 'password123';
 
       // Mock di SharedPreferences
       final mockPrefs = MockSharedPreferences();
@@ -173,15 +173,15 @@ void main() {
       expect(userProvider.isLoading, false);
 
       // Verifica che l'access token sia stato salvato correttamente
-      final accessToken = await mockPrefs.getString('accessToken');
+      final accessToken = mockPrefs.getString('accessToken');
       expect(accessToken, 'dummyAccessToken');
     });
 
     // Test di login con email vuota
     test('Login con email vuota', () async {
       final userProvider = UserProvider();
-      final email = '';
-      final password = 'password123';
+      const email = '';
+      const password = 'password123';
 
       // Simuliamo un errore nel login
       try {
@@ -196,8 +196,8 @@ void main() {
     // Test di login con email errata
     test('Login con email errata', () async {
       final userProvider = UserProvider();
-      final email = 'wrongemail@example.com';
-      final password = 'password123';
+      const email = 'wrongemail@example.com';
+      const password = 'password123';
 
       // Simuliamo un errore nel login
       try {
@@ -212,8 +212,8 @@ void main() {
     // Test di login con password errata
     test('Login con password errata', () async {
       final userProvider = UserProvider();
-      final email = 'testuser@example.com';
-      final password = 'wrongpassword';
+      const email = 'testuser@example.com';
+      const password = 'wrongpassword';
 
       // Simuliamo un errore nel login
       try {
@@ -228,8 +228,8 @@ void main() {
     // Test di login con password vuota
     test('Login con password vuota', () async {
       final userProvider = UserProvider();
-      final email = 'testuser@example.com';
-      final password = '';
+      const email = 'testuser@example.com';
+      const password = '';
 
       // Simuliamo un errore nel login
       try {
@@ -242,13 +242,13 @@ void main() {
     });
   });
 
-  // Rest Password
+  // Reset Password
   group('Password Reset', () {
     // Test di reset della password con email valida
     test('Reset password con email valida', () async {
       final userProvider = UserProvider();
-      final email = 'testuser@example.com';
-      final newPassword = 'newpassword123';
+      const email = 'testuser@example.com';
+      const newPassword = 'newpassword123';
 
       // Crea un mock di SharedPreferences
       final mockPrefs = MockSharedPreferences();
@@ -258,8 +258,6 @@ void main() {
 
       try {
         await userProvider.resetPassword(email, newPassword);
-        // Aggiungi l'assert per verificare il comportamento dopo il reset
-        print('Password reset successful!');
       } catch (e) {
         fail('Il reset della password con email valida dovrebbe passare.');
       }
@@ -268,8 +266,8 @@ void main() {
     // Test di reset della password con email non valida
     test('Reset password con email non valida', () async {
       final userProvider = UserProvider();
-      final email = 'wrongemail@example.com'; // Email non esistente
-      final newPassword = 'newpassword123';
+      const email = 'wrongemail@example.com'; // Email non esistente
+      const newPassword = 'newpassword123';
 
       try {
         await userProvider.resetPassword(email, newPassword);
@@ -283,8 +281,8 @@ void main() {
     // Test di errore generico durante il reset della password
     test('Errore generico durante il reset della password', () async {
       final userProvider = UserProvider();
-      final email = 'testuser@example.com';
-      final newPassword = 'newpassword123';
+      const email = 'testuser@example.com';
+      const newPassword = 'newpassword123';
 
       // Simula un errore nel backend (es. fallimento della richiesta HTTP)
       try {

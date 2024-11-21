@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -229,6 +230,12 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     return canBid;
   }
 
+  bool isBase64(String value) {
+    final base64Regex = RegExp(r'^[A-Za-z0-9+/]+={0,2}$');
+    return value.length % 4 == 0 && base64Regex.hasMatch(value);
+  }
+
+
   @override
   Widget build(BuildContext context) {
     final sellerProvider = Provider.of<SellerProvider>(context);
@@ -254,8 +261,15 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                 children: [
                   ClipRRect(
                     borderRadius: BorderRadius.circular(10.0),
-                    child: Image.asset(
-                      auction?.productImage ?? 'images/300.png',
+                    child: auction?.productImage != null
+                        ? Image.memory(
+                      base64Decode(auction!.productImage!),
+                      height: 250.0,
+                      width: double.infinity,
+                      fit: BoxFit.cover,
+                    )
+                        : Image.asset(
+                      'images/300.png',
                       height: 250.0,
                       width: double.infinity,
                       fit: BoxFit.cover,
@@ -263,6 +277,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                   ),
                 ],
               ),
+
               const SizedBox(height: 20.0),
               Row(
                 children: [
@@ -411,8 +426,11 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                   ? const Center(child: CircularProgressIndicator())
                   : ListTile(
                 leading: CircleAvatar(
+                  radius: 30,
                   backgroundImage: seller.avatar != null
-                      ? NetworkImage(seller.avatar!)
+                      ? isBase64(seller.avatar!)
+                      ? MemoryImage(base64Decode(seller.avatar!))
+                      : NetworkImage(seller.avatar!)
                       : const AssetImage('images/user_avatar.png') as ImageProvider,
                 ),
                 title: Text(seller.nome),

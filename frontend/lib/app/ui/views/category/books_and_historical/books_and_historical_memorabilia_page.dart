@@ -1,3 +1,4 @@
+import 'dart:convert'; // Per la decodifica delle immagini Base64
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -10,10 +11,12 @@ class BooksAndHistoricalMemorabiliaPage extends StatefulWidget {
   const BooksAndHistoricalMemorabiliaPage({Key? key}) : super(key: key);
 
   @override
-  _BooksAndHistoricalMemorabiliaPageState createState() => _BooksAndHistoricalMemorabiliaPageState();
+  _BooksAndHistoricalMemorabiliaPageState createState() =>
+      _BooksAndHistoricalMemorabiliaPageState();
 }
 
-class _BooksAndHistoricalMemorabiliaPageState extends State<BooksAndHistoricalMemorabiliaPage> {
+class _BooksAndHistoricalMemorabiliaPageState
+    extends State<BooksAndHistoricalMemorabiliaPage> {
   bool _isGridView = true; // Per alternare tra visualizzazione a griglia e lista
   bool isLoading = true; // Stato di caricamento
   bool isError = false; // Stato di errore
@@ -41,7 +44,7 @@ class _BooksAndHistoricalMemorabiliaPageState extends State<BooksAndHistoricalMe
 
     if (_currentUserToken != null) {
       try {
-        await auctionProvider.fetchAuctionsByCategory(_currentUserToken!, '13');
+        await auctionProvider.fetchAuctionsByCategory(_currentUserToken!, '13'); // Categoria ID 13
         setState(() {
           isLoading = false;
         });
@@ -59,6 +62,12 @@ class _BooksAndHistoricalMemorabiliaPageState extends State<BooksAndHistoricalMe
         isError = true;
       });
     }
+  }
+
+  // Funzione per verificare se una stringa è in formato Base64
+  bool isBase64(String value) {
+    final base64Regex = RegExp(r'^[A-Za-z0-9+/]+={0,2}$');
+    return value.length % 4 == 0 && base64Regex.hasMatch(value);
   }
 
   // Funzione per recuperare il prezzo più alto per un prodotto specifico
@@ -121,6 +130,7 @@ class _BooksAndHistoricalMemorabiliaPageState extends State<BooksAndHistoricalMe
       itemBuilder: (context, index) {
         final auction = auctions[index];
         bool isFavorite = favoritesProvider.isFavorite(auction);
+        final isBase64Image = isBase64(auction.productImage ?? '');
 
         return FutureBuilder<double?>(
           future: _loadHighestBid(auction.prodottoId, auction.prezzoIniziale),
@@ -156,8 +166,15 @@ class _BooksAndHistoricalMemorabiliaPageState extends State<BooksAndHistoricalMe
                             topLeft: Radius.circular(10.0),
                             topRight: Radius.circular(10.0),
                           ),
-                          child: Image.asset(
-                            'images/orologio-prova.jpg', // Placeholder image
+                          child: isBase64Image
+                              ? Image.memory(
+                            base64Decode(auction.productImage!),
+                            height: 150.0,
+                            width: double.infinity,
+                            fit: BoxFit.cover,
+                          )
+                              : Image.network(
+                            auction.productImage ?? 'images/orologio-prova.jpg',
                             height: 150.0,
                             width: double.infinity,
                             fit: BoxFit.cover,
@@ -210,12 +227,12 @@ class _BooksAndHistoricalMemorabiliaPageState extends State<BooksAndHistoricalMe
                     ),
                   ),
                   Positioned(
-                    top: 8.0,
-                    left: 8.0,
+                    bottom: 1.0,
+                    right: 0.0,
                     child: IconButton(
                       icon: Icon(
                         isFavorite ? Icons.favorite : Icons.favorite_border,
-                        color: isFavorite ? Colors.red : Colors.white,
+                        color: isFavorite ? Colors.red : Colors.grey,
                       ),
                       onPressed: () {
                         setState(() {
@@ -245,6 +262,7 @@ class _BooksAndHistoricalMemorabiliaPageState extends State<BooksAndHistoricalMe
       itemBuilder: (context, index) {
         final auction = auctions[index];
         bool isFavorite = favoritesProvider.isFavorite(auction);
+        final isBase64Image = isBase64(auction.productImage ?? '');
 
         return FutureBuilder<double?>(
           future: _loadHighestBid(auction.prodottoId, auction.prezzoIniziale),
@@ -280,8 +298,15 @@ class _BooksAndHistoricalMemorabiliaPageState extends State<BooksAndHistoricalMe
                             topLeft: Radius.circular(10.0),
                             topRight: Radius.circular(10.0),
                           ),
-                          child: Image.asset(
-                            'images/orologio-prova.jpg', // Placeholder image
+                          child: isBase64Image
+                              ? Image.memory(
+                            base64Decode(auction.productImage!),
+                            height: 200.0,
+                            width: double.infinity,
+                            fit: BoxFit.cover,
+                          )
+                              : Image.network(
+                            auction.productImage ?? 'images/orologio-prova.jpg',
                             height: 200.0,
                             width: double.infinity,
                             fit: BoxFit.cover,

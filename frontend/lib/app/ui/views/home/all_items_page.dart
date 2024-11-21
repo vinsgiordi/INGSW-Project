@@ -1,3 +1,4 @@
+import 'dart:convert'; // Per decodificare immagini Base64
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -48,7 +49,13 @@ class _AllItemsPageState extends State<AllItemsPage> {
     });
   }
 
-  // Funzione per caricare l'offerta più alta per un prodotto specifico
+// Funzione per verificare se una stringa è in formato Base64
+  bool isBase64(String value) {
+    final base64Regex = RegExp(r'^[A-Za-z0-9+/]+={0,2}$');
+    return value.length % 4 == 0 && base64Regex.hasMatch(value);
+  }
+
+// Funzione per caricare l'offerta più alta per un prodotto specifico
   Future<double?> _loadHighestBid(int prodottoId, double prezzoIniziale) async {
     try {
       final bidProvider = Provider.of<BidProvider>(context, listen: false);
@@ -57,7 +64,9 @@ class _AllItemsPageState extends State<AllItemsPage> {
       await bidProvider.fetchBidsByProduct(_currentUserToken!, prodottoId);
 
       if (bidProvider.bids.isNotEmpty) {
-        return bidProvider.bids.map((bid) => bid.importo).reduce((a, b) => a > b ? a : b);
+        return bidProvider.bids
+            .map((bid) => bid.importo)
+            .reduce((a, b) => a > b ? a : b);
       } else {
         return prezzoIniziale;
       }
@@ -70,7 +79,9 @@ class _AllItemsPageState extends State<AllItemsPage> {
   @override
   Widget build(BuildContext context) {
     final favoritesProvider = Provider.of<FavoritesProvider>(context);
-    List<Auction> limitedAuctions = widget.auctions.take(20).toList(); // Limita a 20 elementi o tutti i preferiti
+    List<Auction> limitedAuctions = widget.auctions
+        .take(20)
+        .toList(); // Limita a 20 elementi o tutti i preferiti
 
     return Scaffold(
       appBar: widget.showAppBar
@@ -92,7 +103,8 @@ class _AllItemsPageState extends State<AllItemsPage> {
     );
   }
 
-  Widget buildGridView(List<Auction> auctions, FavoritesProvider favoritesProvider) {
+  Widget buildGridView(
+      List<Auction> auctions, FavoritesProvider favoritesProvider) {
     return GridView.builder(
       padding: const EdgeInsets.all(16.0),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -105,13 +117,16 @@ class _AllItemsPageState extends State<AllItemsPage> {
       itemBuilder: (context, index) {
         final auction = auctions[index];
         bool isFavorite = favoritesProvider.isFavorite(auction);
+        final isBase64Image = isBase64(auction.productImage ?? '');
+
         return FutureBuilder<double?>(
           future: _loadHighestBid(auction.prodottoId, auction.prezzoIniziale),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const Center(child: CircularProgressIndicator());
             } else if (snapshot.hasError || !snapshot.hasData) {
-              return const Center(child: Text('Errore nel caricamento del prezzo'));
+              return const Center(
+                  child: Text('Errore nel caricamento del prezzo'));
             } else {
               double prezzoFinale = snapshot.data!;
               return GestureDetector(
@@ -119,7 +134,8 @@ class _AllItemsPageState extends State<AllItemsPage> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => ProductDetailPage(auctionId: auction.id),
+                      builder: (context) =>
+                          ProductDetailPage(auctionId: auction.id),
                     ),
                   );
                 },
@@ -139,8 +155,16 @@ class _AllItemsPageState extends State<AllItemsPage> {
                               topLeft: Radius.circular(10.0),
                               topRight: Radius.circular(10.0),
                             ),
-                            child: Image.asset(
-                              'images/orologio-prova.jpg',
+                            child: isBase64Image
+                                ? Image.memory(
+                              base64Decode(auction.productImage!),
+                              height: 150.0,
+                              width: double.infinity,
+                              fit: BoxFit.cover,
+                            )
+                                : Image.network(
+                              auction.productImage ??
+                                  'images/orologio-prova.jpg',
                               height: 150.0,
                               width: double.infinity,
                               fit: BoxFit.cover,
@@ -163,7 +187,10 @@ class _AllItemsPageState extends State<AllItemsPage> {
                                   const SizedBox(height: 4.0),
                                   Text(
                                     auction.productDescription != null
-                                        ? auction.productDescription!.trim().length > 30
+                                        ? auction.productDescription!
+                                        .trim()
+                                        .length >
+                                        30
                                         ? '${auction.productDescription!.trim().substring(0, 30)}...'
                                         : auction.productDescription!
                                         : 'Descrizione non disponibile',
@@ -217,20 +244,24 @@ class _AllItemsPageState extends State<AllItemsPage> {
     );
   }
 
-  Widget buildListView(List<Auction> auctions, FavoritesProvider favoritesProvider) {
+  Widget buildListView(
+      List<Auction> auctions, FavoritesProvider favoritesProvider) {
     return ListView.builder(
       padding: const EdgeInsets.all(16.0),
       itemCount: auctions.length,
       itemBuilder: (context, index) {
         final auction = auctions[index];
         bool isFavorite = favoritesProvider.isFavorite(auction);
+        final isBase64Image = isBase64(auction.productImage ?? '');
+
         return FutureBuilder<double?>(
           future: _loadHighestBid(auction.prodottoId, auction.prezzoIniziale),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const Center(child: CircularProgressIndicator());
             } else if (snapshot.hasError || !snapshot.hasData) {
-              return const Center(child: Text('Errore nel caricamento del prezzo'));
+              return const Center(
+                  child: Text('Errore nel caricamento del prezzo'));
             } else {
               double prezzoFinale = snapshot.data!;
               return GestureDetector(
@@ -238,7 +269,8 @@ class _AllItemsPageState extends State<AllItemsPage> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => ProductDetailPage(auctionId: auction.id),
+                      builder: (context) =>
+                          ProductDetailPage(auctionId: auction.id),
                     ),
                   );
                 },
@@ -258,8 +290,16 @@ class _AllItemsPageState extends State<AllItemsPage> {
                               topLeft: Radius.circular(10.0),
                               topRight: Radius.circular(10.0),
                             ),
-                            child: Image.asset(
-                              'images/orologio-prova.jpg',
+                            child: isBase64Image
+                                ? Image.memory(
+                              base64Decode(auction.productImage!),
+                              height: 200.0,
+                              width: double.infinity,
+                              fit: BoxFit.cover,
+                            )
+                                : Image.network(
+                              auction.productImage ??
+                                  'images/orologio-prova.jpg',
                               height: 200.0,
                               width: double.infinity,
                               fit: BoxFit.cover,
@@ -281,7 +321,10 @@ class _AllItemsPageState extends State<AllItemsPage> {
                                 const SizedBox(height: 4.0),
                                 Text(
                                   auction.productDescription != null
-                                      ? auction.productDescription!.trim().length > 50
+                                      ? auction.productDescription!
+                                      .trim()
+                                      .length >
+                                      50
                                       ? '${auction.productDescription!.trim().substring(0, 50)}...'
                                       : auction.productDescription!
                                       : 'Descrizione non disponibile',
@@ -292,7 +335,8 @@ class _AllItemsPageState extends State<AllItemsPage> {
                                 ),
                                 const SizedBox(height: 8.0),
                                 Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  mainAxisAlignment:
+                                  MainAxisAlignment.spaceBetween,
                                   children: <Widget>[
                                     Text(
                                       '€${prezzoFinale.toStringAsFixed(2)}',
@@ -307,14 +351,18 @@ class _AllItemsPageState extends State<AllItemsPage> {
                                         isFavorite
                                             ? Icons.favorite
                                             : Icons.favorite_border,
-                                        color: isFavorite ? Colors.red : Colors.grey,
+                                        color: isFavorite
+                                            ? Colors.red
+                                            : Colors.grey,
                                       ),
                                       onPressed: () {
                                         setState(() {
                                           if (isFavorite) {
-                                            favoritesProvider.removeFavorite(auction);
+                                            favoritesProvider
+                                                .removeFavorite(auction);
                                           } else {
-                                            favoritesProvider.addFavorite(auction);
+                                            favoritesProvider
+                                                .addFavorite(auction);
                                           }
                                         });
                                       },

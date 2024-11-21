@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -249,6 +250,11 @@ class _UserProfilePageState extends State<UserProfilePage> {
     }
   }
 
+  bool isBase64(String value) {
+    final base64Regex = RegExp(r'^[A-Za-z0-9+/]+={0,2}$');
+    return value.length % 4 == 0 && base64Regex.hasMatch(value);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -270,17 +276,29 @@ class _UserProfilePageState extends State<UserProfilePage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Center(
-                      child: GestureDetector(
-                        onTap: _pickImage,
-                        child: CircleAvatar(
-                          radius: 50,
-                          backgroundImage: _avatar != null
-                              ? FileImage(_avatar!)
-                              : const AssetImage('images/user_avatar.png') as ImageProvider,
-                          child: _avatar == null
-                              ? const Icon(Icons.camera_alt, size: 50, color: Colors.grey)
-                              : null,
-                        ),
+                      child: Column(
+                        children: [
+                          CircleAvatar(
+                            radius: 50,
+                            backgroundImage: userProvider.user?.avatar != null
+                                ? (isBase64(userProvider.user!.avatar!)
+                                ? MemoryImage(base64Decode(userProvider.user!.avatar!))
+                                : NetworkImage(userProvider.user!.avatar!) as ImageProvider)
+                                : const AssetImage('images/user_avatar.png'),
+                          ),
+                          const SizedBox(height: 8.0),
+                          GestureDetector(
+                            onTap: _pickImage, // Chiama la funzione per selezionare un'immagine
+                            child: const Text(
+                              'Modifica avatar',
+                              style: TextStyle(
+                                color: Colors.blue,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                     const SizedBox(height: 16.0),

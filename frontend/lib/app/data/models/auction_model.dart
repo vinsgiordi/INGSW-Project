@@ -41,7 +41,6 @@ class Auction {
   });
 
   factory Auction.fromJson(Map<String, dynamic> json) {
-    print('Dati JSON ricevuti: $json'); // Log dei dati JSON
     return Auction(
       id: json['id'] ?? 0,
       prodottoId: json['prodotto_id'] ?? 0,
@@ -54,7 +53,9 @@ class Auction {
       immaginePrincipale: json['immagine_principale'],
       stato: json['stato'] ?? '',
       venditoreId: json['venditore_id'] ?? 0,
-      sellerName: json['venditore'] != null ? "${json['venditore']['nome']} ${json['venditore']['cognome']}" : null,
+      sellerName: json['Product'] != null && json['Product']['venditore'] != null
+          ? "${json['Product']['venditore']['nome']} ${json['Product']['venditore']['cognome']}"
+          : null,
       productName: json['Product'] != null ? json['Product']['nome'] : null,
       productDescription: json['Product'] != null ? json['Product']['descrizione'] : null,
       productImage: json['Product'] != null ? json['Product']['immagine_principale'] : null,

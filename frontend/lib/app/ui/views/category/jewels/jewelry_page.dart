@@ -1,3 +1,4 @@
+import 'dart:convert'; // Per la decodifica delle immagini Base64
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -60,6 +61,12 @@ class _JewelryPageState extends State<JewelryPage> {
     }
   }
 
+  // Funzione per verificare se una stringa è in formato Base64
+  bool isBase64(String value) {
+    final base64Regex = RegExp(r'^[A-Za-z0-9+/]+={0,2}$');
+    return value.length % 4 == 0 && base64Regex.hasMatch(value);
+  }
+
   // Funzione per recuperare l'offerta più alta per un prodotto specifico
   Future<double?> _loadHighestBid(int prodottoId, double prezzoIniziale) async {
     try {
@@ -120,12 +127,13 @@ class _JewelryPageState extends State<JewelryPage> {
       itemBuilder: (context, index) {
         final auction = auctions[index];
         bool isFavorite = favoritesProvider.isFavorite(auction);
+        final isBase64Image = isBase64(auction.productImage ?? '');
 
         return FutureBuilder<double?>(
           future: _loadHighestBid(auction.prodottoId, auction.prezzoIniziale),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
-              return const CircularProgressIndicator();
+              return const Center(child: CircularProgressIndicator());
             }
 
             double prezzoFinale = snapshot.data ?? auction.prezzoIniziale;
@@ -155,8 +163,15 @@ class _JewelryPageState extends State<JewelryPage> {
                             topLeft: Radius.circular(10.0),
                             topRight: Radius.circular(10.0),
                           ),
-                          child: Image.asset(
-                            'images/orologio-prova.jpg', // Placeholder image
+                          child: isBase64Image
+                              ? Image.memory(
+                            base64Decode(auction.productImage!),
+                            height: 150.0,
+                            width: double.infinity,
+                            fit: BoxFit.cover,
+                          )
+                              : Image.network(
+                            auction.productImage ?? 'images/orologio-prova.jpg', // Placeholder image
                             height: 150.0,
                             width: double.infinity,
                             fit: BoxFit.cover,
@@ -209,12 +224,12 @@ class _JewelryPageState extends State<JewelryPage> {
                     ),
                   ),
                   Positioned(
-                    top: 8.0,
-                    left: 8.0,
+                    bottom: 1.0,
+                    right: 0.0,
                     child: IconButton(
                       icon: Icon(
                         isFavorite ? Icons.favorite : Icons.favorite_border,
-                        color: isFavorite ? Colors.red : Colors.white,
+                        color: isFavorite ? Colors.red : Colors.grey,
                       ),
                       onPressed: () {
                         setState(() {
@@ -244,12 +259,13 @@ class _JewelryPageState extends State<JewelryPage> {
       itemBuilder: (context, index) {
         final auction = auctions[index];
         bool isFavorite = favoritesProvider.isFavorite(auction);
+        final isBase64Image = isBase64(auction.productImage ?? '');
 
         return FutureBuilder<double?>(
           future: _loadHighestBid(auction.prodottoId, auction.prezzoIniziale),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
-              return const CircularProgressIndicator();
+              return const Center(child: CircularProgressIndicator());
             }
 
             double prezzoFinale = snapshot.data ?? auction.prezzoIniziale;
@@ -279,8 +295,15 @@ class _JewelryPageState extends State<JewelryPage> {
                             topLeft: Radius.circular(10.0),
                             topRight: Radius.circular(10.0),
                           ),
-                          child: Image.asset(
-                            'images/orologio-prova.jpg', // Placeholder image
+                          child: isBase64Image
+                              ? Image.memory(
+                            base64Decode(auction.productImage!),
+                            height: 200.0,
+                            width: double.infinity,
+                            fit: BoxFit.cover,
+                          )
+                              : Image.network(
+                            auction.productImage ?? 'images/orologio-prova.jpg', // Placeholder image
                             height: 200.0,
                             width: double.infinity,
                             fit: BoxFit.cover,
