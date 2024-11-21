@@ -56,7 +56,7 @@ const User = sequelize.define('User', {
         allowNull: true
     },
     avatar: {
-        type: DataTypes.STRING,
+        type: DataTypes.TEXT,
         allowNull: true
     }
 }, {

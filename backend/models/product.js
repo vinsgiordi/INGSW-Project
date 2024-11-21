@@ -23,7 +23,7 @@ const Product = sequelize.define('Product', {
         allowNull: false
     },
     immagine_principale: {
-        type: DataTypes.STRING,
+        type: DataTypes.TEXT,
         allowNull: true
     },
     venditore_id: {

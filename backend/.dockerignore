@@ -1,8 +1,29 @@
-# Ignora i file e le cartelle inutili
+# Ignora i moduli di Node.js
 node_modules
+npm-debug.log
+
+# Ignora file di configurazione locali e ambientali
+.env
+*.env
+
+# Ignora file di log
+*.log
+
+# Ignora i file di controllo versione
 .git
 .gitignore
-.dockerignore
+
+# Ignora i file e le cartelle di editor/IDE
+.vscode
+.idea
+*.swp
+
+# Ignora build o output temporanei
+dist
+build
+tmp
+coverage
+
+# Evita di includere il Dockerfile stesso e il file .dockerignore
 Dockerfile
-.env
-*.log
+.dockerignore
