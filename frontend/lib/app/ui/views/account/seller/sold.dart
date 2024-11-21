@@ -1,3 +1,4 @@
+import 'dart:convert'; // Per la gestione delle immagini Base64
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -9,50 +10,68 @@ class SoldPage extends StatefulWidget {
 }
 
 class _SoldPageState extends State<SoldPage> {
+  bool isLoading = true;
+  bool isError = false;
+
   @override
   void initState() {
     super.initState();
-    _fetchSoldAuctions(); // Carica le aste vendute quando la pagina viene inizializzata
+    _fetchSoldAuctions();
   }
 
   Future<void> _fetchSoldAuctions() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? token = prefs.getString('accessToken');
-    if (token != null) {
-      await Provider.of<AuctionProvider>(context, listen: false).fetchSoldAuctions(token);
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String? token = prefs.getString('accessToken');
+
+      if (token != null) {
+        await Provider.of<AuctionProvider>(context, listen: false).fetchSoldAuctions(token);
+      }
+    } catch (e) {
+      print('Errore nel caricamento delle aste vendute: $e');
+      setState(() {
+        isError = true;
+      });
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
     }
+  }
+
+  bool isBase64(String value) {
+    final base64Regex = RegExp(r'^[A-Za-z0-9+/]+={0,2}$');
+    return value.length % 4 == 0 && base64Regex.hasMatch(value);
   }
 
   @override
   Widget build(BuildContext context) {
     final auctionProvider = Provider.of<AuctionProvider>(context);
     final soldAuctions = auctionProvider.auctions.where((auction) {
-      print("Asta ID: ${auction.id}, Stato: ${auction.stato}, Prezzo Minimo: ${auction.prezzoMinimo}, Offerte: ${auction.bids?.length}");
-
       return auction.stato == 'completata' &&
           auction.bids != null &&
           auction.bids!.isNotEmpty &&
           auction.bids!.any((bid) => bid.importo >= (auction.prezzoMinimo ?? 0));
     }).toList();
 
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('Prodotti Venduti'),
       ),
-      body: auctionProvider.isLoading
+      body: isLoading
           ? const Center(child: CircularProgressIndicator())
+          : isError
+          ? const Center(
+        child: Text(
+          'Errore nel caricamento dei dati.',
+          style: TextStyle(fontSize: 18, color: Colors.red),
+        ),
+      )
           : soldAuctions.isEmpty
           ? const Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            SizedBox(height: 20),
-            Text(
-              'Nessun prodotto venduto.',
-              style: TextStyle(fontSize: 18),
-            ),
-          ],
+        child: Text(
+          'Nessun prodotto venduto.',
+          style: TextStyle(fontSize: 18),
         ),
       )
           : Padding(
@@ -67,6 +86,26 @@ class _SoldPageState extends State<SoldPage> {
             final margin = highestBid - auction.prezzoIniziale;
             final marginColor =
             margin >= 0 ? Colors.green[700] : Colors.red[700];
+
+            final imageWidget = auction.productImage != null
+                ? isBase64(auction.productImage!)
+                ? Image.memory(
+              base64Decode(auction.productImage!),
+              fit: BoxFit.cover,
+              width: 60,
+              height: 60,
+            )
+                : Image.network(
+              auction.productImage!,
+              fit: BoxFit.cover,
+              width: 60,
+              height: 60,
+            )
+                : Icon(
+              Icons.image,
+              size: 40,
+              color: Colors.grey[600],
+            );
 
             return Card(
               elevation: 5,
@@ -84,16 +123,12 @@ class _SoldPageState extends State<SoldPage> {
                         CircleAvatar(
                           radius: 30,
                           backgroundColor: Colors.grey[300],
-                          child: auction.productImage != null
-                              ? Image.network(auction.productImage!)
-                              : Icon(Icons.image,
-                              size: 40, color: Colors.grey[600]),
+                          child: imageWidget,
                         ),
                         const SizedBox(width: 16),
                         Expanded(
                           child: Column(
-                            crossAxisAlignment:
-                            CrossAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
                                 auction.productName ?? 'Prodotto',
@@ -119,8 +154,7 @@ class _SoldPageState extends State<SoldPage> {
                     Divider(color: Colors.grey[300]),
                     const SizedBox(height: 8),
                     Row(
-                      mainAxisAlignment:
-                      MainAxisAlignment.spaceBetween,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         const Text(
                           'Prezzo finale:',
@@ -141,8 +175,7 @@ class _SoldPageState extends State<SoldPage> {
                     ),
                     const SizedBox(height: 8),
                     Row(
-                      mainAxisAlignment:
-                      MainAxisAlignment.spaceBetween,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         const Text(
                           'Margine di guadagno:',

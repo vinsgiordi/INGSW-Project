@@ -4,7 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/user_model.dart';
 
 class UserRequests {
-  final String baseUrl = 'http://127.0.0.1:3000';
+  final String baseUrl = 'http://10.0.2.2:3000';
 
   // Funzione per ottenere i dati dell'utente
   Future<User> getUserData(String token) async {

@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 
 class FavoriteAuctionCard extends StatefulWidget {
@@ -35,6 +37,8 @@ class _FavoriteAuctionCardState extends State<FavoriteAuctionCard> {
 
   @override
   Widget build(BuildContext context) {
+    bool isBase64 = _isBase64(widget.imagePath);
+
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Column(
@@ -43,7 +47,14 @@ class _FavoriteAuctionCardState extends State<FavoriteAuctionCard> {
             children: <Widget>[
               ClipRRect(
                 borderRadius: BorderRadius.circular(10.0),
-                child: Image.asset(
+                child: isBase64
+                    ? Image.memory(
+                  base64Decode(widget.imagePath),
+                  height: 150.0,
+                  width: 150.0,
+                  fit: BoxFit.cover,
+                )
+                    : Image.asset(
                   widget.imagePath,
                   height: 150.0,
                   width: 150.0,
@@ -104,5 +115,10 @@ class _FavoriteAuctionCardState extends State<FavoriteAuctionCard> {
         ],
       ),
     );
+  }
+
+  bool _isBase64(String value) {
+    final base64Regex = RegExp(r'^[A-Za-z0-9+/]+={0,2}$');
+    return value.length % 4 == 0 && base64Regex.hasMatch(value);
   }
 }

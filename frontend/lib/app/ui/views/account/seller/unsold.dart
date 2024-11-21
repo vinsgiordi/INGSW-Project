@@ -1,3 +1,4 @@
+import 'dart:convert'; // Per la gestione delle immagini Base64
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -9,6 +10,9 @@ class UnsoldPage extends StatefulWidget {
 }
 
 class _UnsoldPageState extends State<UnsoldPage> {
+  bool isLoading = true;
+  bool isError = false;
+
   @override
   void initState() {
     super.initState();
@@ -16,12 +20,28 @@ class _UnsoldPageState extends State<UnsoldPage> {
   }
 
   Future<void> _fetchUnsoldAuctions() async {
-    final auctionProvider = Provider.of<AuctionProvider>(context, listen: false);
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? token = prefs.getString('accessToken');
-    if (token != null) {
-      await auctionProvider.fetchUnsoldAuctions(token);
+    try {
+      final auctionProvider = Provider.of<AuctionProvider>(context, listen: false);
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String? token = prefs.getString('accessToken');
+      if (token != null) {
+        await auctionProvider.fetchUnsoldAuctions(token);
+      }
+    } catch (e) {
+      print('Errore nel caricamento delle aste non vendute: $e');
+      setState(() {
+        isError = true;
+      });
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
     }
+  }
+
+  bool isBase64(String value) {
+    final base64Regex = RegExp(r'^[A-Za-z0-9+/]+={0,2}$');
+    return value.length % 4 == 0 && base64Regex.hasMatch(value);
   }
 
   @override
@@ -33,24 +53,20 @@ class _UnsoldPageState extends State<UnsoldPage> {
       appBar: AppBar(
         title: const Text('Non Venduti'),
       ),
-      body: auctionProvider.isLoading
+      body: isLoading
           ? const Center(child: CircularProgressIndicator())
+          : isError
+          ? const Center(
+        child: Text(
+          'Errore nel caricamento dei dati.',
+          style: TextStyle(fontSize: 18, color: Colors.red),
+        ),
+      )
           : unsoldAuctions.isEmpty
-          ? Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Image.asset(
-              'images/donna_che_ordina.jpg',
-              height: 190,
-              fit: BoxFit.contain,
-            ),
-            const SizedBox(height: 20),
-            const Text(
-              'Ancora nessun prodotto non venduto.',
-              style: TextStyle(fontSize: 18),
-            ),
-          ],
+          ? const Center(
+        child: Text(
+          'Ancora nessun prodotto non venduto.',
+          style: TextStyle(fontSize: 18),
         ),
       )
           : ListView.builder(
@@ -60,6 +76,26 @@ class _UnsoldPageState extends State<UnsoldPage> {
           final String reason = auction.bids == null || auction.bids!.isEmpty
               ? 'Nessuna offerta ricevuta'
               : 'Prezzo minimo non raggiunto';
+
+          final imageWidget = auction.productImage != null
+              ? isBase64(auction.productImage!)
+              ? Image.memory(
+            base64Decode(auction.productImage!),
+            fit: BoxFit.cover,
+            width: 60,
+            height: 60,
+          )
+              : Image.network(
+            auction.productImage!,
+            fit: BoxFit.cover,
+            width: 60,
+            height: 60,
+          )
+              : Icon(
+            Icons.image,
+            size: 40,
+            color: Colors.grey[600],
+          );
 
           return Card(
             elevation: 5,
@@ -77,9 +113,7 @@ class _UnsoldPageState extends State<UnsoldPage> {
                       CircleAvatar(
                         radius: 30,
                         backgroundColor: Colors.grey[300],
-                        child: auction.productImage != null
-                            ? Image.network(auction.productImage!)
-                            : Icon(Icons.image, size: 40, color: Colors.grey[600]),
+                        child: imageWidget,
                       ),
                       const SizedBox(width: 16),
                       Expanded(

@@ -1,3 +1,4 @@
+import 'dart:convert'; // Per gestire immagini Base64
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../components/product_detail.dart';
@@ -23,33 +24,23 @@ class _MyBidsPageState extends State<MyBidsPage> with AutomaticKeepAliveClientMi
     });
   }
 
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _loadBids();  // Carica nuovamente le offerte quando le dipendenze cambiano
-  }
-
-  @override
-  void didUpdateWidget(covariant MyBidsPage oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    _loadBids();
-  }
-
-  @override
-  void dispose() {
-    // Assicurati di chiamare il dispose super.
-    super.dispose();
-  }
-
   Future<void> _loadBids() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    _currentUserToken = prefs.getString('accessToken'); // Recupera il token da SharedPreferences
+    _currentUserToken = prefs.getString('accessToken');
 
     if (_currentUserToken != null) {
       try {
         await Provider.of<BidProvider>(context, listen: false).fetchBidsByUser(_currentUserToken!);
 
-        // Controlla se il widget è ancora montato prima di chiamare setState
+        // Log delle immagini caricate, una sola volta
+        final bids = Provider.of<BidProvider>(context, listen: false).bids;
+        for (var bid in bids) {
+          final auction = bid.auction;
+          if (auction != null) {
+            print('Image data: ${auction.productImage}');
+          }
+        }
+
         if (!mounted) return;
 
         setState(() {
@@ -73,16 +64,22 @@ class _MyBidsPageState extends State<MyBidsPage> with AutomaticKeepAliveClientMi
     }
   }
 
+  // Verifica se una stringa è in formato Base64
+  bool isBase64(String value) {
+    final base64Regex = RegExp(r'^[A-Za-z0-9+/]+={0,2}$');
+    return value.length % 4 == 0 && base64Regex.hasMatch(value);
+  }
+
   @override
   Widget build(BuildContext context) {
-    super.build(context);  // Required when using AutomaticKeepAliveClientMixin
+    super.build(context);
     final bidProvider = Provider.of<BidProvider>(context);
     final bids = bidProvider.bids;
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Le mie offerte'),
-        automaticallyImplyLeading: true, // Mostra il pulsante "indietro"
+        automaticallyImplyLeading: true,
       ),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -96,14 +93,18 @@ class _MyBidsPageState extends State<MyBidsPage> with AutomaticKeepAliveClientMi
         itemBuilder: (context, index) {
           final bid = bids[index];
           Auction? auction = bid.auction;
+          final isBase64Image = isBase64(auction?.productImage ?? '');
+
           return GestureDetector(
             onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => ProductDetailPage(auctionId: auction!.id),
-                ),
-              );
+              if (auction != null) {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ProductDetailPage(auctionId: auction.id),
+                  ),
+                );
+              }
             },
             child: Card(
               elevation: 4,
@@ -111,8 +112,30 @@ class _MyBidsPageState extends State<MyBidsPage> with AutomaticKeepAliveClientMi
               child: ListTile(
                 leading: ClipRRect(
                   borderRadius: BorderRadius.circular(8.0),
-                  child: Image.asset(
-                    auction?.productImage ?? 'images/150.png', // Usa una risorsa locale se l'immagine è assente
+                  child: auction?.productImage != null && isBase64Image
+                      ? Image.memory(
+                    base64Decode(auction!.productImage!),
+                    width: 60,
+                    height: 60,
+                    fit: BoxFit.cover,
+                  )
+                      : auction?.productImage != null
+                      ? Image.network(
+                    auction!.productImage!,
+                    width: 60,
+                    height: 60,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Image.asset(
+                        'images/placeholder.jpg',
+                        width: 60,
+                        height: 60,
+                        fit: BoxFit.cover,
+                      );
+                    },
+                  )
+                      : Image.asset(
+                    'images/placeholder.jpg',
                     width: 60,
                     height: 60,
                     fit: BoxFit.cover,
@@ -135,10 +158,7 @@ class _MyBidsPageState extends State<MyBidsPage> with AutomaticKeepAliveClientMi
                 ),
                 trailing: IconButton(
                   icon: const Icon(Icons.delete, color: Colors.red),
-                  onPressed: () {
-                    print('Eliminazione dell\'offerta con ID: ${bid.id}');
-                    _deleteBid(bid.id);
-                  },
+                  onPressed: () => _deleteBid(bid.id),
                 ),
               ),
             ),
@@ -150,14 +170,13 @@ class _MyBidsPageState extends State<MyBidsPage> with AutomaticKeepAliveClientMi
 
   Future<void> _deleteBid(int bidId) async {
     try {
-      print('Tentativo di eliminazione dell\'offerta con ID: $bidId');
       await Provider.of<BidProvider>(context, listen: false).deleteBid(_currentUserToken!, bidId);
-      print('Offerta eliminata con successo');
+      await _loadBids(); // Aggiorna la lista delle offerte
     } catch (e) {
       print('Errore durante l\'eliminazione dell\'offerta: $e');
     }
   }
 
   @override
-  bool get wantKeepAlive => true;  // Mantiene lo stato della pagina anche quando si naviga avanti e indietro
+  bool get wantKeepAlive => true;
 }

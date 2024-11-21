@@ -4,8 +4,6 @@ import 'package:mockito/mockito.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:bid_hub/app/data/provider/auction_provider.dart';
 import 'package:flutter/material.dart';
-import 'package:mockito/mockito.dart';
-import 'dart:convert';
 
 // Mock della SharedPreferences
 class MockSharedPreferences extends Mock implements SharedPreferences {}
@@ -19,8 +17,8 @@ void main() {
       final userProvider = UserProvider();
       final auctionProvider = AuctionProvider();
 
-      final email = 'test_auction@example.com';
-      final password = 'password123';
+      const email = 'test_auction@example.com';
+      const password = 'password123';
 
       // Simula il login per ottenere il token
       final mockPrefs = MockSharedPreferences();
@@ -60,8 +58,8 @@ void main() {
       final userProvider = UserProvider();
       final auctionProvider = AuctionProvider();
 
-      final email = 'test_auction@example.com';
-      final password = 'password123';
+      const email = 'test_auction@example.com';
+      const password = 'password123';
 
       // Simula il login per ottenere il token
       final mockPrefs = MockSharedPreferences();
@@ -100,8 +98,8 @@ void main() {
       final userProvider = UserProvider();
       final auctionProvider = AuctionProvider();
 
-      final email = 'test_auction@example.com';
-      final password = 'password123';
+      const email = 'test_auction@example.com';
+      const password = 'password123';
 
       // Simula il login per ottenere il token
       final mockPrefs = MockSharedPreferences();
@@ -141,8 +139,8 @@ void main() {
       final userProvider = UserProvider();
       final auctionProvider = AuctionProvider();
 
-      final email = 'test_auction@example.com';
-      final password = 'password123';
+      const email = 'test_auction@example.com';
+      const password = 'password123';
 
       // Simula il login per ottenere il token
       final mockPrefs = MockSharedPreferences();
@@ -180,8 +178,8 @@ void main() {
       final userProvider = UserProvider();
       final auctionProvider = AuctionProvider();
 
-      final email = 'test_auction@example.com';
-      final password = 'password123';
+      const email = 'test_auction@example.com';
+      const password = 'password123';
 
       // Simula il login per ottenere il token
       final mockPrefs = MockSharedPreferences();

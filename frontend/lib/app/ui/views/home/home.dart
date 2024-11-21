@@ -324,6 +324,9 @@ class _HomeState extends State<Home> {
                       itemCount: limitedAuctions.length,
                       itemBuilder: (context, index) {
                         final auction = limitedAuctions[index];
+
+                        print('Auction ID: ${auction.id}, Seller Name: ${auction.sellerName}');
+
                         return FutureBuilder<double?>(
                           future: _loadHighestBid(auction.prodottoId, auction.prezzoIniziale),
                           builder: (context, snapshot) {

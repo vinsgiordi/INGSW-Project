@@ -1,8 +1,9 @@
+import 'dart:convert'; // Per decodificare immagini Base64
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
 import '../data/provider/seller_provider.dart';
-import 'product_detail.dart';  // Import della pagina di dettaglio prodotto
 
 class SellerProfilePage extends StatefulWidget {
   final int venditoreId;
@@ -30,9 +31,14 @@ class _SellerProfilePageState extends State<SellerProfilePage> {
         await Provider.of<SellerProvider>(context, listen: false)
             .fetchSellerDetails(token, widget.venditoreId);
       } else {
-        print("Token non disponibile");  // Gestisci il caso in cui il token non è disponibile
+        print("Token non disponibile"); // Gestisci il caso in cui il token non è disponibile
       }
     });
+  }
+
+  bool isBase64(String value) {
+    final base64Regex = RegExp(r'^[A-Za-z0-9+/]+={0,2}$');
+    return value.length % 4 == 0 && base64Regex.hasMatch(value);
   }
 
   @override
@@ -55,10 +61,13 @@ class _SellerProfilePageState extends State<SellerProfilePage> {
             children: [
               Center(
                 child: CircleAvatar(
-                  radius: 50,
+                  radius: 60,
                   backgroundImage: sellerProvider.seller?.avatar != null
-                      ? NetworkImage(sellerProvider.seller!.avatar!)
+                      ? isBase64(sellerProvider.seller!.avatar!)
+                      ? MemoryImage(base64Decode(sellerProvider.seller!.avatar!))
+                      : NetworkImage(sellerProvider.seller!.avatar!)
                       : const AssetImage('images/user_avatar.png') as ImageProvider,
+
                 ),
               ),
               const SizedBox(height: 16.0),
@@ -93,13 +102,25 @@ class _SellerProfilePageState extends State<SellerProfilePage> {
                 itemCount: sellerProvider.products.length,
                 itemBuilder: (context, index) {
                   final product = sellerProvider.products[index];
+                  final isBase64Image = isBase64(product.immaginePrincipale ?? '');
+
                   return ListTile(
                     leading: product.immaginePrincipale != null
-                        ? Image.network(
-                      product.immaginePrincipale!,
-                      width: 50,
-                      height: 50,
-                      fit: BoxFit.cover,
+                        ? ClipRRect(
+                      borderRadius: BorderRadius.circular(8.0),
+                      child: isBase64Image
+                          ? Image.memory(
+                        base64Decode(product.immaginePrincipale!),
+                        width: 50,
+                        height: 50,
+                        fit: BoxFit.cover,
+                      )
+                          : Image.network(
+                        product.immaginePrincipale!,
+                        width: 50,
+                        height: 50,
+                        fit: BoxFit.cover,
+                      ),
                     )
                         : Image.asset(
                       'images/orologio-prova.jpg', // Usare il placeholder

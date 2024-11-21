@@ -1,3 +1,4 @@
+import 'dart:convert'; // Per gestire immagini Base64
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../components/product_detail.dart';
@@ -28,12 +29,12 @@ class _FavoritesPageState extends State<FavoritesPage> {
   // Carica i preferiti dell'utente con il token associato
   Future<void> _loadFavorites() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    _currentUserToken = prefs.getString('accessToken'); // Recupera il token da SharedPreferences
+    _currentUserToken = prefs.getString('accessToken');
 
     if (_currentUserToken != null) {
       try {
         await Provider.of<FavoritesProvider>(context, listen: false)
-            .loadFavoritesForUser(); // Carica i preferiti senza richiedere un token
+            .loadFavoritesForUser(); // Carica i preferiti
         setState(() {
           isLoading = false;
         });
@@ -53,6 +54,12 @@ class _FavoritesPageState extends State<FavoritesPage> {
     }
   }
 
+  // Verifica se una stringa è in formato Base64
+  bool isBase64(String value) {
+    final base64Regex = RegExp(r'^[A-Za-z0-9+/]+={0,2}$');
+    return value.length % 4 == 0 && base64Regex.hasMatch(value);
+  }
+
   // Carica l'offerta più alta
   Future<double?> _loadHighestBid(String token, int prodottoId, double prezzoIniziale) async {
     try {
@@ -62,11 +69,11 @@ class _FavoritesPageState extends State<FavoritesPage> {
       if (bidProvider.bids.isNotEmpty) {
         return bidProvider.bids.map((bid) => bid.importo).reduce((a, b) => a > b ? a : b);
       } else {
-        return prezzoIniziale; // Ritorna il prezzo iniziale se non ci sono offerte
+        return prezzoIniziale;
       }
     } catch (e) {
-      print('Error fetching bids: $e');
-      return prezzoIniziale; // In caso di errore, ritorna il prezzo iniziale
+      print('Errore nel caricamento delle offerte: $e');
+      return prezzoIniziale;
     }
   }
 
@@ -78,7 +85,7 @@ class _FavoritesPageState extends State<FavoritesPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('I tuoi preferiti'),
-        automaticallyImplyLeading: false, // Nasconde la freccia di ritorno
+        automaticallyImplyLeading: false,
       ),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -91,6 +98,7 @@ class _FavoritesPageState extends State<FavoritesPage> {
         itemCount: favoriteAuctions.length,
         itemBuilder: (context, index) {
           final auction = favoriteAuctions[index];
+          final isBase64Image = isBase64(auction.productImage ?? '');
 
           return FutureBuilder<double?>(
             future: _loadHighestBid(
@@ -119,8 +127,15 @@ class _FavoritesPageState extends State<FavoritesPage> {
                     child: ListTile(
                       leading: ClipRRect(
                         borderRadius: BorderRadius.circular(8.0),
-                        child: Image.asset(
-                          auction.productImage ?? 'images/150.png',
+                        child: isBase64Image
+                            ? Image.memory(
+                          base64Decode(auction.productImage!),
+                          width: 60,
+                          height: 60,
+                          fit: BoxFit.cover,
+                        )
+                            : Image.network(
+                          auction.productImage ?? 'images/placeholder.jpg',
                           width: 60,
                           height: 60,
                           fit: BoxFit.cover,
@@ -158,8 +173,7 @@ class _FavoritesPageState extends State<FavoritesPage> {
           );
         },
       ),
-      bottomNavigationBar:
-      const BottomNavBar(selectedIndex: 3), // Navbar per navigare tra le sezioni
+      bottomNavigationBar: const BottomNavBar(selectedIndex: 3),
     );
   }
 }

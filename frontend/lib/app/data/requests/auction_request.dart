@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import '../models/auction_model.dart';
 
 class AuctionRequests {
-  final String baseUrl = 'http://127.0.0.1:3000'; // Sostituisci con l'URL del tuo server
+  final String baseUrl = 'http://10.0.2.2:3000'; // Sostituisci con l'URL del tuo server
 
   // Crea una nuova asta
   Future<http.Response> createAuction(String token, Map<String, dynamic> auctionData) async {

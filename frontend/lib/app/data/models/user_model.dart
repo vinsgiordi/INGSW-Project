@@ -1,3 +1,5 @@
+import 'package:intl/intl.dart';
+
 class User {
   final int id;
   final String nome;
@@ -34,13 +36,19 @@ class User {
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
+    String? formattedDate;
+    if (json['data_nascita'] != null) {
+      final date = DateTime.parse(json['data_nascita']);
+      formattedDate = DateFormat('yyyy-MM-dd').format(date);
+    }
+
     return User(
       id: json['id'] != null ? json['id'] as int : 0,  // Gestisci il caso in cui 'id' sia null
       nome: json['nome'] ?? 'Nome non disponibile',  // Fornisci valori di fallback se i campi sono null
       cognome: json['cognome'] ?? 'Cognome non disponibile',
       email: json['email'] ?? 'Email non disponibile',
       password: json['password'],
-      dataNascita: json['data_nascita'],
+      dataNascita: formattedDate,
       shortBio: json['short_bio'],
       indirizzoDiSpedizione: json['indirizzo_di_spedizione'],
       indirizzoDiFatturazione: json['indirizzo_di_fatturazione'],

@@ -128,7 +128,8 @@ const getUser = async (req, res) => {
             social_links: user.social_links,
             posizione_geografica: user.posizione_geografica,
             indirizzo_di_spedizione: user.indirizzo_di_spedizione,
-            indirizzo_di_fatturazione: user.indirizzo_di_fatturazione
+            indirizzo_di_fatturazione: user.indirizzo_di_fatturazione,
+            avatar: user.avatar
         });
     } catch (error) {
         res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: error.message });
