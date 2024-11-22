@@ -293,8 +293,8 @@ const createOrder = async (auction, bid) => {
             auction_id: auction.id,
             acquirente_id: bid.utente_id,
             venditore_id: auction.venditore_id,
-            indirizzo_spedizione: acquirente.indirizzo_spedizione || "",
-            metodo_pagamento: metodoPagamento ? metodoPagamento.numero_carta : "",
+            indirizzo_spedizione: acquirente.indirizzo_spedizione || "Non fornito",
+            metodo_pagamento: metodoPagamento ? metodoPagamento.numero_carta : "Non fornito",
             importo_totale: bid.importo
         };
 

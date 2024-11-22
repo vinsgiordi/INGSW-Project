@@ -8,7 +8,7 @@ const dayjs = require('../utils/dayjs');
 
 // Crea una nuova offerta
 const createBid = async (req, res) => {
-    const { prodotto_id, auction_id, importo } = req.body;
+    const { prodotto_id, auction_id, importo, bid_id } = req.body;
 
     try {
         if (!prodotto_id || !auction_id || !importo) {
@@ -81,11 +81,24 @@ const createBid = async (req, res) => {
             importo
         });
 
-        // Notifica il venditore per l'offerta ricevuta
-        await Notification.create({
+        // Notifica per aste silenziose
+        if (auction.tipo === 'silenziosa') {
+            await Notification.create({
+                utente_id: auction.venditore_id,
+                messaggio: `Hai ricevuto un'offerta di €${importo} per il tuo prodotto ${auction.Product.nome}. Decidi se accettarla o rifiutarla.`,
+                auction_id: auction_id,
+                bid_id: bid.id,
+            });
+
+            console.log(`Notifica per asta silenziosa inviata con bid_id: ${bid.id}`);
+        } else {
+            // Notifica il venditore per l'offerta ricevuta
+            await Notification.create({
             utente_id: auction.venditore_id,
             messaggio: `Hai ricevuto un'offerta per il tuo prodotto ${auction.Product.nome}.`,
-        });
+            });
+            console.log('Notifica per asta non silenziosa inviata.');
+        }
 
         res.status(StatusCodes.CREATED).json(bid);
     } catch (error) {
