@@ -18,7 +18,7 @@ docker-compose.override.yml
 query.txt
 
 # Folder delle immagini e degli avatar
-files/images/*
+files
 
 # Script di import delle immagini e degli avatar
 utils/uploadAvatar.js
