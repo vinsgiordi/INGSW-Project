@@ -25,7 +25,6 @@ import '../category/coins_and_stamps/coins_and_stamps_page.dart';
 import '../category/comics_and_animations/comics_and_animation_page.dart';
 
 import 'all_items_page.dart';
-import 'package:intl/intl.dart';
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -42,6 +41,19 @@ class _HomeState extends State<Home> {
     super.initState();
     _initializeData();
   }
+
+  String formatDate(DateTime date) {
+    return "${date.day.toString().padLeft(2, '0')} ${_getMonthName(date.month)} ${date.year}";
+  }
+
+  String _getMonthName(int month) {
+    const months = [
+      "gennaio", "febbraio", "marzo", "aprile", "maggio", "giugno",
+      "luglio", "agosto", "settembre", "ottobre", "novembre", "dicembre"
+    ];
+    return months[month - 1];
+  }
+
 
   Future<void> _initializeData() async {
     _currentUserToken = await StorageService().getAccessToken();
@@ -181,9 +193,9 @@ class _HomeState extends State<Home> {
                               );
                             },
                             child: auctionCard(
-                              auction.productImage ?? 'images/orologio-prova.jpg',
+                              auction.productImage ?? 'images/300.png',
                               auction.productName ?? 'Titolo dell\'asta',
-                              'Termina il ${DateFormat('dd MMMM yyyy HH:mm').format(auction.dataScadenza)}',
+                              'Termina il ${formatDate(auction.dataScadenza)} ${auction.dataScadenza.hour.toString().padLeft(2, '0')}:${auction.dataScadenza.minute.toString().padLeft(2, '0')}',
                             ),
                           );
                         }).toList(),
@@ -265,7 +277,7 @@ class _HomeState extends State<Home> {
                           child: Stack(
                             children: [
                               FavoriteImage(
-                                imagePath: auction.productImage ?? 'images/orologio-prova.jpg',
+                                imagePath: auction.productImage ?? 'images/300.png',
                               ),
                               Positioned(
                                 top: 3.0,
@@ -346,7 +358,7 @@ class _HomeState extends State<Home> {
                                   );
                                 },
                                 child: shortAuctionCard(
-                                  auction.productImage ?? 'images/orologio-prova.jpg',
+                                  auction.productImage ?? 'images/300.png',
                                   auction.productName ?? 'Titolo dell\'asta',
                                   auction.sellerName ?? 'Nome venditore', // Mostra il nome del venditore
                                   '€${prezzoFinale.toStringAsFixed(2)}',

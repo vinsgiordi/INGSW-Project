@@ -15,16 +15,15 @@ Widget shortAuctionCard(String imagePath, String title, String selector, String 
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Expanded(
-          child: ClipRRect(
+        Container(
+          width: double.infinity,
+          height: 120.0,
+          decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(8.0), // Angoli arrotondati per le immagini
-            child: isBase64Image
-                ? Image.memory(
-              base64Decode(imagePath),
-              fit: BoxFit.cover,
-            )
-                : Image.asset(
-              imagePath,
+            image: DecorationImage(
+              image:isBase64Image
+              ? MemoryImage(base64Decode(imagePath))
+                  : AssetImage(imagePath) as ImageProvider,
               fit: BoxFit.cover,
             ),
           ),

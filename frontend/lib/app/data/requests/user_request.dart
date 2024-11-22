@@ -32,8 +32,6 @@ class UserRequests {
       body: jsonEncode({'email': email, 'password': password}),
     );
 
-    print('Risposta del backend: ${response.body}');  // Aggiungi questo per il debug
-
     if (response.statusCode == 200) {
       final jsonResponse = json.decode(response.body);
       return {
@@ -53,8 +51,6 @@ class UserRequests {
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode(userData),
     );
-
-    print('Risposta del backend: ${response.body}');  // Aggiungi questo per il debug
 
     if (response.statusCode == 201) {
       final jsonResponse = json.decode(response.body);
@@ -111,8 +107,6 @@ class UserRequests {
         'newPassword': newPassword,
       }),
     );
-
-    print('Risposta del backend: ${response.body}');  // Aggiungi questo per il debug
 
     if (response.statusCode != 200) {
       throw Exception('Failed to reset password: ${response.body}');

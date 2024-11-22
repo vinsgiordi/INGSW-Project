@@ -4,9 +4,6 @@ import '../models/user_model.dart';
 import '../requests/auction_request.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../requests/user_request.dart';
-
-
 class AuctionProvider with ChangeNotifier {
   List<Auction> _auctions = [];
   List<Auction> _activeAuctions = [];
@@ -92,7 +89,6 @@ class AuctionProvider with ChangeNotifier {
         List<Auction> auctionsForCategory = await AuctionRequests().getAuctionsByCategory(token, categoryId);
         _carouselAuctions.addAll(auctionsForCategory);
       }
-      print('Aste caricate per il carosello: $_carouselAuctions');
     } catch (e) {
       print('Errore nel caricamento delle aste per il carosello: $e');
     }
@@ -108,7 +104,6 @@ class AuctionProvider with ChangeNotifier {
 
     try {
       _activeAuctions = await AuctionRequests().getActiveAuctions(token);
-      print("Auction data received: $_activeAuctions");
     } catch (e) {
       print('Error fetching active auctions: $e');
     }
@@ -124,7 +119,6 @@ class AuctionProvider with ChangeNotifier {
 
     try {
       _endingSoonAuctions = await AuctionRequests().getAuctionsEndingSoon(token);
-      print("Auction data for ending soon: $_endingSoonAuctions");
     } catch (e) {
       print('Error fetching auctions ending soon: $e');
     }
@@ -140,7 +134,6 @@ class AuctionProvider with ChangeNotifier {
 
     try {
       _auctionType = await AuctionRequests().getAuctionsByType(token);
-      print("Auction data by type: $_auctionType");
     } catch (e) {
       print('Error loading auctions by type: $e');
     }
@@ -196,7 +189,6 @@ class AuctionProvider with ChangeNotifier {
 
     try {
       _auctions = await AuctionRequests().getSoldAuctions(token); // Usa la nuova API
-      print('Aste vendute caricate: $_auctions');
     } catch (e) {
       print('Errore nel caricamento delle aste vendute: $e');
     }
@@ -212,7 +204,6 @@ class AuctionProvider with ChangeNotifier {
 
     try {
       _unsoldAuctions = await AuctionRequests().getUnsoldAuctions(token); // Chiama il metodo corretto
-      print('Aste non vendute caricate: $_unsoldAuctions');
     } catch (e) {
       print('Errore nel caricamento delle aste non vendute: $e');
     }
@@ -288,7 +279,6 @@ class AuctionProvider with ChangeNotifier {
     try {
       final activeAuctions = await AuctionRequests().getUserActiveAuctions(token);
       _activeUserAuctions = activeAuctions; // Aggiorna _activeUserAuctions con i risultati
-      print('Aste attive dell\'utente caricate: $_activeUserAuctions');
     } catch (e) {
       print('Errore nel caricamento delle aste attive dell\'utente: $e');
     }

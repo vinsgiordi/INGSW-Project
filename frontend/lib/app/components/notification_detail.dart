@@ -90,6 +90,7 @@ class _NotificationDetailPageState extends State<NotificationDetailPage> {
 
   @override
   Widget build(BuildContext context) {
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Dettagli Notifica'),
@@ -104,6 +105,11 @@ class _NotificationDetailPageState extends State<NotificationDetailPage> {
           } else {
             final auction = snapshot.data!;
             final bool isBidNotification = widget.bidId != 0 && auction.stato == 'attiva' && auction.tipo == 'silenziosa';
+
+            print('Valori per isBidNotification:');
+            print('widget.bidId: ${widget.bidId}');
+            print('auction.stato: ${auction.stato}');
+            print('auction.tipo: ${auction.tipo}');
 
             return Padding(
               padding: const EdgeInsets.all(16.0),
