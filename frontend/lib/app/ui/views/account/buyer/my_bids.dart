@@ -135,7 +135,7 @@ class _MyBidsPageState extends State<MyBidsPage> with AutomaticKeepAliveClientMi
                     },
                   )
                       : Image.asset(
-                    'images/placeholder.jpg',
+                    'images/300.png',
                     width: 60,
                     height: 60,
                     fit: BoxFit.cover,

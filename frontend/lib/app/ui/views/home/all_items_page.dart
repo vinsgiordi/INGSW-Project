@@ -162,9 +162,9 @@ class _AllItemsPageState extends State<AllItemsPage> {
                               width: double.infinity,
                               fit: BoxFit.cover,
                             )
-                                : Image.network(
+                                : Image.asset(
                               auction.productImage ??
-                                  'images/orologio-prova.jpg',
+                                  'images/300.png',
                               height: 150.0,
                               width: double.infinity,
                               fit: BoxFit.cover,
@@ -286,21 +286,17 @@ class _AllItemsPageState extends State<AllItemsPage> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: <Widget>[
                           ClipRRect(
-                            borderRadius: const BorderRadius.only(
-                              topLeft: Radius.circular(10.0),
-                              topRight: Radius.circular(10.0),
-                            ),
+                            borderRadius: BorderRadius.circular(10.0),
                             child: isBase64Image
                                 ? Image.memory(
                               base64Decode(auction.productImage!),
-                              height: 200.0,
+                              height: 150.0,
                               width: double.infinity,
                               fit: BoxFit.cover,
                             )
-                                : Image.network(
-                              auction.productImage ??
-                                  'images/orologio-prova.jpg',
-                              height: 200.0,
+                                : Image.asset(
+                              'images/300.png',
+                              height: 250.0,
                               width: double.infinity,
                               fit: BoxFit.cover,
                             ),

@@ -31,9 +31,6 @@ class SellerProvider with ChangeNotifier {
       } else {
         _products = [];
       }
-
-      print("Venditore: ${_seller?.nome} ${_seller?.cognome}");
-      print("Numero di prodotti: ${_products.length}");
     } catch (e) {
       print('Errore durante il recupero dei dettagli del venditore: $e');
     }

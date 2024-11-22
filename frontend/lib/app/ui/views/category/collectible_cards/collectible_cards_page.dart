@@ -169,8 +169,8 @@ class _CollectibleCardsPageState extends State<CollectibleCardsPage> {
                             width: double.infinity,
                             fit: BoxFit.cover,
                           )
-                              : Image.network(
-                            auction.productImage ?? 'images/orologio-prova.jpg', // Placeholder image
+                              : Image.asset(
+                            auction.productImage ?? 'images/300.png', // Placeholder image
                             height: 150.0,
                             width: double.infinity,
                             fit: BoxFit.cover,
@@ -301,8 +301,8 @@ class _CollectibleCardsPageState extends State<CollectibleCardsPage> {
                             width: double.infinity,
                             fit: BoxFit.cover,
                           )
-                              : Image.network(
-                            auction.productImage ?? 'images/orologio-prova.jpg', // Placeholder image
+                              : Image.asset(
+                            auction.productImage ?? 'images/300.png', // Placeholder image
                             height: 200.0,
                             width: double.infinity,
                             fit: BoxFit.cover,
