@@ -1,0 +1,108 @@
+{
+  "timestamp": "2024-11-01T08:15:22Z",
+  "level": "info",
+  "message": "Asta creata dall'utente: 79",
+  "endpoint": "/api/auctions/create",
+  "params": { "titolo": "Fumetto Spiderman", "prezzo_iniziale": 500, "data_scadenza": "2024-11-15T10:00:00Z" }
+}
+{
+  "timestamp": "2024-11-01T09:05:47Z",
+  "level": "info",
+  "message": "Visualizzazione aste attive richiesta dall'utente: 79",
+  "endpoint": "/api/auctions/user/active"
+}
+{
+  "timestamp": "2024-11-01T10:32:18Z",
+  "level": "info",
+  "message": "Asta creata dall'utente: 83",
+  "endpoint": "/api/auctions/create",
+  "params": { "titolo": "Smartphone Nuovo", "prezzo_iniziale": 300, "data_scadenza": "2024-11-20T15:30:00Z" }
+}
+{
+  "timestamp": "2024-11-01T11:22:05Z",
+  "level": "info",
+  "message": "Asta 5678 cancellata dall'utente: 79",
+  "endpoint": "/api/auctions/5678"
+}
+{
+  "timestamp": "2024-11-02T08:45:00Z",
+  "level": "info",
+  "message": "Asta creata dall'utente: 90",
+  "endpoint": "/api/auctions/create",
+  "params": { "titolo": "Bici da Corsa", "prezzo_iniziale": 800, "data_scadenza": "2024-11-25T12:00:00Z" }
+}
+{
+  "timestamp": "2024-11-02T09:10:20Z",
+  "level": "info",
+  "message": "Visualizzazione aste attive richiesta dall'utente: 83",
+  "endpoint": "/api/auctions/user/active"
+}
+{
+  "timestamp": "2024-11-02T10:15:42Z",
+  "level": "info",
+  "message": "Asta 7891 cancellata dall'utente: 90",
+  "endpoint": "/api/auctions/7891"
+}
+{
+  "timestamp": "2024-11-03T14:25:10Z",
+  "level": "info",
+  "message": "Visualizzazione aste attive richiesta dall'utente: 83",
+  "endpoint": "/api/auctions/user/active"
+}
+{
+  "timestamp": "2024-11-03T15:12:33Z",
+  "level": "info",
+  "message": "Asta creata dall'utente: 79",
+  "endpoint": "/api/auctions/create",
+  "params": { "titolo": "Console di Gioco", "prezzo_iniziale": 200, "data_scadenza": "2024-11-27T09:00:00Z" }
+}
+{
+  "timestamp": "2024-11-03T16:55:45Z",
+  "level": "info",
+  "message": "Asta 1029 cancellata dall'utente: 79",
+  "endpoint": "/api/auctions/1029"
+}
+{
+  "timestamp": "2024-11-04T08:20:13Z",
+  "level": "info",
+  "message": "Visualizzazione aste attive richiesta dall'utente: 90",
+  "endpoint": "/api/auctions/user/active"
+}
+{
+  "timestamp": "2024-11-04T08:35:29Z",
+  "level": "info",
+  "message": "Asta creata dall'utente: 90",
+  "endpoint": "/api/auctions/create",
+  "params": { "titolo": "Tavola da Surf", "prezzo_iniziale": 150, "data_scadenza": "2024-11-30T14:00:00Z" }
+}
+{
+  "timestamp": "2024-11-04T09:50:42Z",
+  "level": "info",
+  "message": "Asta 2468 cancellata dall'utente: 83",
+  "endpoint": "/api/auctions/2468"
+}
+{
+  "timestamp": "2024-11-05T10:00:01Z",
+  "level": "info",
+  "message": "Visualizzazione aste attive richiesta dall'utente: 79",
+  "endpoint": "/api/auctions/user/active"
+}
+{
+  "timestamp": "2024-11-05T12:45:19Z",
+  "level": "info",
+  "message": "Asta creata dall'utente: 83",
+  "endpoint": "/api/auctions/create",
+  "params": { "titolo": "PC Desktop", "prezzo_iniziale": 450, "data_scadenza": "2024-12-05T16:00:00Z" }
+}
+{
+  "timestamp": "2024-11-05T14:30:50Z",
+  "level": "info",
+  "message": "Visualizzazione aste attive richiesta dall'utente: 90",
+  "endpoint": "/api/auctions/user/active"
+}
+{
+  "timestamp": "2024-11-05T15:15:37Z",
+  "level": "info",
+  "message": "Asta 4571 cancellata dall'utente: 79",
+  "endpoint": "/api/auctions/4571"
+}
