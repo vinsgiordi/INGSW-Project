@@ -4,7 +4,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/user_model.dart';
 
 class UserRequests {
-  final String baseUrl = 'http://10.0.2.2:3000';
+  // final String baseUrl = 'http://10.0.2.2:3000'; // ENDPOINT per il localhost
+  final String baseUrl = 'http://51.20.181.177:3000'; // ENDPOINT per AWS
 
   // Funzione per ottenere i dati dell'utente
   Future<User> getUserData(String token) async {

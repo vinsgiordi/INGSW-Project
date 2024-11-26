@@ -2,7 +2,8 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class SellerRequest {
-  final String baseUrl = 'http://10.0.2.2:3000';
+  // final String baseUrl = 'http://10.0.2.2:3000'; // ENDPOINT per il localhost
+  final String baseUrl = 'http://51.20.181.177:3000'; // ENDPOINT per AWS
 
   // Recupera i dettagli del venditore per ID
   Future<Map<String, dynamic>> getSellerDetails(String token, int sellerId) async {

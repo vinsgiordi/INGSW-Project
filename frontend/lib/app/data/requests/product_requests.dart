@@ -2,7 +2,8 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 class ProductRequests {
-  static const String baseUrl = 'http://10.0.2.2:3000'; // Inserisci qui il tuo URL base
+  // final String baseUrl = 'http://10.0.2.2:3000'; // ENDPOINT per il localhost
+  static const String baseUrl = 'http://51.20.181.177:3000'; // ENDPOINT per AWS
 
   // Ottieni i dettagli del prodotto e dell'asta
   static Future<Map<String, dynamic>> getProductDetails(int productId) async {

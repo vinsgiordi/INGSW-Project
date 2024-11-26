@@ -3,7 +3,8 @@ import 'package:http/http.dart' as http;
 import '../models/auction_model.dart';
 
 class SearchRequests {
-  final String baseUrl = 'http://10.0.2.2:3000';
+  // final String baseUrl = 'http://10.0.2.2:3000'; // ENDPOINT per il localhost
+  final String baseUrl = 'http://51.20.181.177:3000'; // ENDPOINT per AWS
 
   // Funzione per eseguire la ricerca con query e/o categoryId
   Future<List<Auction>> searchAuctions(String token, {String? query, String? categoryId}) async {
