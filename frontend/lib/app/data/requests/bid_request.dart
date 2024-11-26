@@ -3,7 +3,8 @@ import 'package:http/http.dart' as http;
 import '../models/bid_model.dart';
 
 class BidRequests {
-  final String baseUrl = 'http://10.0.2.2:3000';
+  // final String baseUrl = 'http://10.0.2.2:3000'; // ENDPOINT per il localhost
+  final String baseUrl = 'http://51.20.181.177:3000'; // ENDPOINT per AWS
 
   // Crea una nuova offerta
   Future<Bid> createBid(String token, Map<String, dynamic> bidData) async {

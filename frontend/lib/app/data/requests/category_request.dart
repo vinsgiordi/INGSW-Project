@@ -3,8 +3,8 @@ import 'package:http/http.dart' as http;
 import '../models/category_model.dart';
 
 class CategoryRequests {
-  // Definisci l'URL di base per l'API
-  final String baseUrl = 'http://10.0.2.2:3000';
+  // final String baseUrl = 'http://10.0.2.2:3000'; // ENDPOINT per il localhost
+  final String baseUrl = 'http://51.20.181.177:3000'; // ENDPOINT per AWS
 
   // Funzione per recuperare tutte le categorie dall'API
   Future<List<Category>> getAllCategories() async {

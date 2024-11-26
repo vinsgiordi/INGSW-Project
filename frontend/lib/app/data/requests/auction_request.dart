@@ -3,7 +3,8 @@ import 'package:http/http.dart' as http;
 import '../models/auction_model.dart';
 
 class AuctionRequests {
-  final String baseUrl = 'http://10.0.2.2:3000'; // Sostituisci con l'URL del tuo server
+  // final String baseUrl = 'http://10.0.2.2:3000'; // ENDPOINT per il localhost
+  final String baseUrl = 'http://51.20.181.177:3000'; // ENDPOINT per AWS
 
   // Crea una nuova asta
   Future<http.Response> createAuction(String token, Map<String, dynamic> auctionData) async {
