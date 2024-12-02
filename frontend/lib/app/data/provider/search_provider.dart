@@ -17,7 +17,6 @@ class SearchProvider with ChangeNotifier {
     try {
       // Chiamata alla funzione di ricerca
       _searchResults = await SearchRequests().searchAuctions(token, query: query, categoryId: categoryId);
-      print('Risultati della ricerca: $_searchResults');
     } catch (e) {
       print('Errore nella ricerca: $e');
       _searchResults = []; // Reset se c'è un errore

@@ -12,7 +12,7 @@ class AuctionProvider with ChangeNotifier {
   List<Auction> _carouselAuctions = [];
   List<Auction> _unsoldAuctions = [];
   List<Auction> _activeUserAuctions = [];
-  String? _accessToken; // Per memorizzare l'access token
+  String? _accessToken;
   User? _user;
   bool _isUserSeller = false;
   bool _isLoading = false;
@@ -203,7 +203,7 @@ class AuctionProvider with ChangeNotifier {
     notifyListeners();
 
     try {
-      _unsoldAuctions = await AuctionRequests().getUnsoldAuctions(token); // Chiama il metodo corretto
+      _unsoldAuctions = await AuctionRequests().getUnsoldAuctions(token);
     } catch (e) {
       print('Errore nel caricamento delle aste non vendute: $e');
     }

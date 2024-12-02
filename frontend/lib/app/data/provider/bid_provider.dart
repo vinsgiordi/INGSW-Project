@@ -13,14 +13,12 @@ class BidProvider extends ChangeNotifier {
   // Crea una nuova offerta
   Future<void> createBid(String token, Map<String, dynamic> bidData) async {
     try {
-      print('Creazione offerta con dati: $bidData'); // Logga i dati prima di inviarli
       await BidRequests().createBid(token, bidData);
       await fetchBidsByProduct(token, bidData['prodotto_id']);
     } catch (e) {
       print('Error creating bid: $e');
     }
   }
-
 
   // Recupera tutte le offerte per un prodotto
   Future<void> fetchBidsByProduct(String token, int prodottoId) async {

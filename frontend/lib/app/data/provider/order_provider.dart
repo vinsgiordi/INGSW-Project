@@ -58,7 +58,6 @@ class OrderProvider with ChangeNotifier {
   Future<bool> markOrderAsPaid(String token, int id) async {
     try {
       final response = await OrderRequests().markAsPaid(token, id);
-      print('Response status code: ${response.statusCode}'); // Log dello status code
       if (response.statusCode == 200) {
         fetchOrders(token); // Aggiorna la lista ordini
         return true; // Ritorna "true" in caso di successo

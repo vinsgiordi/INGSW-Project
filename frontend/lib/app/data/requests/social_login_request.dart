@@ -7,7 +7,7 @@ class SocialLoginRequest {
 
   // Funzione per login tramite un provider social (Google, Facebook, GitHub, LinkedIn)
   Future<String> loginWithProvider(String provider) async {
-    final url = '$baseUrl/auth/$provider'; // Costruiamo l'URL in base al provider selezionato
+    final url = '$baseUrl/auth/$provider';
 
     final response = await http.get(
       Uri.parse(url),
@@ -19,7 +19,7 @@ class SocialLoginRequest {
     if (response.statusCode == 200) {
       var jsonResponse = jsonDecode(response.body);
       if (jsonResponse['token'] != null) {
-        return jsonResponse['token']; // Restituiamo il token JWT
+        return jsonResponse['token'];
       } else {
         throw Exception('Login fallito: Nessun token ricevuto.');
       }

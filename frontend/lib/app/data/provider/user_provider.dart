@@ -6,7 +6,7 @@ import '../requests/user_request.dart';
 class UserProvider with ChangeNotifier {
   User? _user;
   bool _isLoading = false;
-  String? _accessToken; // Per memorizzare l'access token
+  String? _accessToken;
 
   User? get user => _user;
   bool get isLoading => _isLoading;
@@ -49,7 +49,7 @@ class UserProvider with ChangeNotifier {
 
     if (token == null) {
       print('Token non trovato, reindirizzo al login');
-      return; // Puoi aggiungere la logica per il redirect al login qui
+      return;
     }
 
     try {

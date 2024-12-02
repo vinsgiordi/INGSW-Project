@@ -213,8 +213,8 @@ const acceptSilentAuctionBid = async (auction, bidId) => {
             throw new Error('Offerta non trovata o non valida per questa asta.');
         }
 
-        console.log('Dati Auction:', auction); // Controllo
-        console.log('Dati Bid:', bid); // Controllo
+        console.log('Dati Auction:', auction);
+        console.log('Dati Bid:', bid);
 
         if (!auction.venditore_id || !bid.utente_id) {
             throw new Error('Venditore o Acquirente non trovato');

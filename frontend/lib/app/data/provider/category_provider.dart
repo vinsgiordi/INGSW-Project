@@ -12,7 +12,7 @@ class CategoryProvider with ChangeNotifier {
   // Recupera le categorie
   Future<void> fetchRecommendedCategories() async {
     _isLoading = true;
-    notifyListeners();  // Notifica gli ascoltatori che è in corso il caricamento
+    notifyListeners();
 
     try {
       // Recupera tutte le categorie dall'API

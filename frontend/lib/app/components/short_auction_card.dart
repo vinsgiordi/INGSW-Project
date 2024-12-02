@@ -1,4 +1,4 @@
-import 'dart:convert'; // Per decodificare immagini Base64
+import 'dart:convert';
 import 'package:flutter/material.dart';
 
 Widget shortAuctionCard(String imagePath, String title, String selector, String endingMessage) {

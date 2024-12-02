@@ -7,7 +7,7 @@ class ProductRequests {
 
   // Ottieni i dettagli del prodotto e dell'asta
   static Future<Map<String, dynamic>> getProductDetails(int productId) async {
-    final url = Uri.parse('$baseUrl/api/products/$productId');  // Assumiamo che tu abbia un endpoint /products/:id
+    final url = Uri.parse('$baseUrl/api/products/$productId');
     final response = await http.get(url);
 
     if (response.statusCode == 200) {

@@ -10,13 +10,13 @@ class SellerRequest {
     final response = await http.get(
       Uri.parse('$baseUrl/api/sellers/$sellerId'),
       headers: {
-        'Authorization': 'Bearer $token',  // Aggiungiamo il token di autenticazione
+        'Authorization': 'Bearer $token',
         'Content-Type': 'application/json',
       },
     );
 
     if (response.statusCode == 200) {
-      return json.decode(response.body);  // Decodifica la risposta JSON
+      return json.decode(response.body);
     } else {
       throw Exception('Errore durante il recupero dei dettagli del venditore');
     }

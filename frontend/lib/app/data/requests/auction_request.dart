@@ -11,7 +11,7 @@ class AuctionRequests {
     final response = await http.post(
       Uri.parse('$baseUrl/api/auctions/create'),
       headers: {
-        'Authorization': 'Bearer $token', // Passa il token nell'header
+        'Authorization': 'Bearer $token',
         'Content-Type': 'application/json',
       },
       body: jsonEncode(auctionData),
@@ -21,7 +21,7 @@ class AuctionRequests {
       print('Errore durante la creazione dell\'asta: ${response.statusCode}, ${response.body}');
     }
 
-    return response;  // Torna l'intera risposta per ulteriori controlli
+    return response;
   }
 
   // Recupera tutte le aste
@@ -116,7 +116,7 @@ class AuctionRequests {
   // Recupera tutte le aste per tipo
   Future<List<Auction>> getAuctionsByType(String token) async {
     final response = await http.get(
-      Uri.parse('$baseUrl/api/auctions/by-type'), // L'endpoint che restituisce le aste per tipo
+      Uri.parse('$baseUrl/api/auctions/by-type'),
       headers: {
         'Authorization': 'Bearer $token',
         'Content-Type': 'application/json'
@@ -135,7 +135,7 @@ class AuctionRequests {
   // Recupera tutte le aste vendute
   Future<List<Auction>> getSoldAuctions(String token) async {
     final response = await http.get(
-      Uri.parse('$baseUrl/api/auctions/completed'), // L'endpoint per le aste completate
+      Uri.parse('$baseUrl/api/auctions/completed'),
       headers: {
         'Authorization': 'Bearer $token',
         'Content-Type': 'application/json',

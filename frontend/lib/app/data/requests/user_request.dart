@@ -58,10 +58,10 @@ class UserRequests {
       return {
         'user': jsonResponse['user'],
         'accessToken': jsonResponse['token'],
-      }; // Restituisce i dati necessari
+      };
     } else if (response.statusCode == 400 || response.statusCode == 409) {
       final jsonResponse = json.decode(response.body);
-      throw Exception(jsonResponse['error'] ?? 'Registration failed'); // Cattura l'errore specifico
+      throw Exception(jsonResponse['error'] ?? 'Registration failed');
     } else {
       throw Exception('Registration failed');
     }
@@ -120,7 +120,6 @@ class UserRequests {
     final refreshToken = prefs.getString('refreshToken');
 
     if (refreshToken == null) {
-      print('Refresh token mancante');
       return;
     }
 
@@ -136,7 +135,6 @@ class UserRequests {
 
       // Salva il nuovo access token
       await prefs.setString('accessToken', newAccessToken);
-      print('Nuovo access token ottenuto: $newAccessToken');
     } else {
       print('Impossibile ottenere un nuovo access token');
     }
