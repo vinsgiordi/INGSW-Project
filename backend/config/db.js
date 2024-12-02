@@ -10,7 +10,7 @@ const sequelize = new Sequelize(databaseUrl, {
   protocol: 'postgres',
   logging: false,
   dialectOptions: {
-    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false, // Solo se usi SSL in produzione
+    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
   }
 });
 

@@ -13,7 +13,7 @@ const authMiddleware = (req, res, next) => {
         // Verifica il token e decodifica l'ID dell'utente
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         req.user = decoded; // Salva il payload del token nella richiesta
-        next(); // Passa al prossimo middleware o controller
+        next();
     } catch (error) {
         console.error("Errore durante la verifica del token:", error);
         return res.status(StatusCodes.UNAUTHORIZED).json({ error: 'Token non valido' });

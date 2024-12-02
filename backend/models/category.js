@@ -12,7 +12,7 @@ const Category = sequelize.define('Category', {
         allowNull: false
     }
 }, {
-    timestamps: false, // Disabilita createdAt e updatedAt
+    timestamps: false,
     tableName: 'categories'
 });
 
