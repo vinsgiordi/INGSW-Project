@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_web_auth/flutter_web_auth.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import '../../../services/storage_service.dart';  // Importa il servizio di storage
+import '../../../services/storage_service.dart';
 
 class SocialLoginProvider with ChangeNotifier {
   bool _isLoading = false;
@@ -17,7 +16,7 @@ class SocialLoginProvider with ChangeNotifier {
     try {
       // Effettua l'autenticazione tramite social
       final result = await FlutterWebAuth.authenticate(
-        url: 'http://10.0.2.2:3000/auth/$provider', // URL dell'API backend per il login social
+        url: 'http://51.20.181.177:3000/auth/$provider',
         callbackUrlScheme: 'bidhub',
       );
 
