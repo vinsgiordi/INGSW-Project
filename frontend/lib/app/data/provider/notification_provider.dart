@@ -57,7 +57,6 @@ class NotificationProvider with ChangeNotifier {
   }
 
   // Elimina tutte le notifiche contemporaneamente
-  // NotificationProvider
   Future<void> deleteAllNotifications(String token) async {
     try {
       await NotificationRequests().deleteAllNotification(token);

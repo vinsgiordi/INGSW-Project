@@ -8,7 +8,6 @@ class CategoryRequests {
 
   // Funzione per recuperare tutte le categorie dall'API
   Future<List<Category>> getAllCategories() async {
-    // Esegui una richiesta HTTP GET all'endpoint delle categorie
     final response = await http.get(
       Uri.parse('$baseUrl/api/categories'),
       headers: {
@@ -16,15 +15,10 @@ class CategoryRequests {
       },
     );
 
-    // Verifica se la risposta HTTP ha avuto successo
     if (response.statusCode == 200) {
-      // Decodifica la risposta JSON
       List jsonResponse = json.decode(response.body);
-
-      // Mappa il JSON in una lista di oggetti Category
       return jsonResponse.map((category) => Category.fromJson(category)).toList();
     } else {
-      // Lancia un'eccezione in caso di errore
       throw Exception('Errore nel recuperare le categorie');
     }
   }

@@ -86,7 +86,7 @@ class OrderRequests {
       },
     ).then((response) {
       if (response.statusCode != 200) {
-        print('Errore nel completare il pagamento: ${response.body}'); // Log in caso di errore
+        print('Errore nel completare il pagamento: ${response.body}');
       }
       return response;
     });

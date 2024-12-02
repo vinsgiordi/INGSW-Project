@@ -43,8 +43,8 @@ class User {
     }
 
     return User(
-      id: json['id'] != null ? json['id'] as int : 0,  // Gestisci il caso in cui 'id' sia null
-      nome: json['nome'] ?? 'Nome non disponibile',  // Fornisci valori di fallback se i campi sono null
+      id: json['id'] != null ? json['id'] as int : 0,
+      nome: json['nome'] ?? 'Nome non disponibile',
       cognome: json['cognome'] ?? 'Cognome non disponibile',
       email: json['email'] ?? 'Email non disponibile',
       password: json['password'],
@@ -59,7 +59,7 @@ class User {
       posizioneGeografica: json['posizione_geografica'],
       socialId: json['social_id'],
       socialProvider: json['social_provider'],
-      avatar: json['avatar'] != null ? json['avatar'] as String : null,  // Assicurati che 'avatar' possa essere null
+      avatar: json['avatar'] != null ? json['avatar'] as String : null,
     );
   }
 

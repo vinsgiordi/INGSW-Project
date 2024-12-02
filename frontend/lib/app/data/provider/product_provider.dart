@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/auction_model.dart';
 import '../models/product_model.dart';
-import '../requests/product_requests.dart';  // API Request per il prodotto
+import '../requests/product_requests.dart';
 
 class ProductProvider with ChangeNotifier {
   Product? product;

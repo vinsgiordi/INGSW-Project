@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
-import '../models/user_model.dart';  // Importa il model dell'utente
-import '../models/product_model.dart';  // Se hai un modello per i prodotti
-import '../requests/seller_request.dart';  // Richieste HTTP per il venditore
+import '../models/user_model.dart';
+import '../models/product_model.dart';
+import '../requests/seller_request.dart';
 
 class SellerProvider with ChangeNotifier {
-  User? _seller;  // Usa il model User per il venditore
-  List<Product> _products = [];  // Lista di prodotti
+  User? _seller;
+  List<Product> _products = [];
   bool _isLoading = false;
 
-  User? get seller => _seller;  // Getter per il venditore
-  List<Product> get products => _products;  // Getter per i prodotti
-  bool get isLoading => _isLoading;  // Stato di caricamento
+  User? get seller => _seller;
+  List<Product> get products => _products;
+  bool get isLoading => _isLoading;
 
   // Metodo per recuperare i dettagli del venditore
   Future<void> fetchSellerDetails(String token, int sellerId) async {

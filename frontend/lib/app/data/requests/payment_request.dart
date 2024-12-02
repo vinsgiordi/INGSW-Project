@@ -14,7 +14,7 @@ class PaymentRequests {
         'Authorization': 'Bearer $token',
         'Content-Type': 'application/json',
       },
-      body: jsonEncode(payment.toJson()),  // Convertiamo l'oggetto Payment in JSON
+      body: jsonEncode(payment.toJson()),
     );
 
     if (response.statusCode == 201) {

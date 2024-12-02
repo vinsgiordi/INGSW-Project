@@ -1,4 +1,4 @@
-import 'product_model.dart'; // Import the Product model
+import 'product_model.dart';
 
 class Order {
   final int? id;
@@ -12,7 +12,7 @@ class Order {
   final DateTime createdAt;
   final DateTime updatedAt;
   final int auctionId;
-  final Product? product;  // Add this field for associated Product
+  final Product? product;
 
   Order({
     required this.id,
@@ -30,7 +30,6 @@ class Order {
   });
 
   factory Order.fromJson(Map<String, dynamic> json) {
-    print("Parsing JSON per Order: ${json['id']}"); // Stampa di debug
     return Order(
       id: json['id'] != null ? json['id'] as int : 0,  // Gestisci il caso in cui 'id' sia null
       prodottoId: json['prodotto_id'],
@@ -39,7 +38,7 @@ class Order {
       stato: json['stato'],
       indirizzoSpedizione: json['indirizzo_spedizione'],
       metodoPagamento: json['metodo_pagamento'],
-      importoTotale: double.parse(json['importo_totale'].toString()), // Safely parse to double
+      importoTotale: double.parse(json['importo_totale'].toString()),
       createdAt: DateTime.parse(json['created_at']),
       updatedAt: DateTime.parse(json['updated_at']),
       auctionId: json['auction_id'],

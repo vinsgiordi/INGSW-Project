@@ -9,7 +9,7 @@ class PaymentProvider with ChangeNotifier {
   List<Payment> get payments => _payments;
   bool get isLoading => _isLoading;
 
-  final PaymentRequests _paymentRequests = PaymentRequests(); // Crea un'istanza di PaymentRequests
+  final PaymentRequests _paymentRequests = PaymentRequests();
 
   // Metodo per recuperare i pagamenti
   Future<void> fetchPayments(String token) async {
@@ -33,7 +33,7 @@ class PaymentProvider with ChangeNotifier {
       _payments.add(newPayment);
 
       // Subito dopo aver aggiunto il pagamento, aggiorna l'intera lista dei pagamenti dal server
-      await fetchPayments(token); // Ricarica i pagamenti per assicurarti che la lista sia aggiornata
+      await fetchPayments(token);
       notifyListeners();
     } catch (e) {
       print('Errore nell\'aggiunta del pagamento: $e');
@@ -44,7 +44,7 @@ class PaymentProvider with ChangeNotifier {
   // Metodo per eliminare un pagamento
   Future<void> deletePayment(String token, int paymentId) async {
     try {
-      await _paymentRequests.deletePayment(token, paymentId); // Usa l'istanza per chiamare il metodo
+      await _paymentRequests.deletePayment(token, paymentId);
       _payments.removeWhere((payment) => payment.id == paymentId);
       notifyListeners(); // Notifica l'aggiornamento
     } catch (e) {
